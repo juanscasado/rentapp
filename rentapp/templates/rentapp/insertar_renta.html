@@ -1,0 +1,143 @@
+{% extends "base_generic.html" %}
+{% block title %} <title>Rentapp - Nueva Renta</title> {% endblock %}
+
+{% block content %}
+
+<style>
+    .select-hidden {
+        display: none;
+    }
+
+    .select-visible {
+        display: inline;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <fieldset class="border p-4 rounded">
+                <legend class="bi-plus-square-fill"> Nueva Renta</legend>
+                <form action="{% url 'rentapp:insertar_renta' %}" method="post">
+                    {% csrf_token %}
+                    <!--usertario form-->
+                    <input hidden name="user" value="{{user.id}}" type="text">
+                    {{ form.usertario.errors }}
+
+                    <!--dirección form-->
+                    <label for="id_direccion">{{ form.direccion.label }}</label>
+
+                    <div class="form-floating mb-3">
+
+                        {{ form.direccion }}
+                        {{ form.direccion.errors }}
+                    </div>
+
+                    <!--provincia, municipio, sector form-->
+                   
+                <div style="margin:10px 10px 10px 10px;" class=" flex-nowrap">
+
+                    <select onchange="getId()" id="provincia" name="provincia" required></select>
+
+                    <select class="select-hidden" onchange="getIdSector()" id="municipio" name="municipio"
+                        required></select>
+
+                    <select class="select-hidden" id="sector" name="sector"></select>
+                </div>
+
+                    <!--referencia form-->
+                    <label for="id_referencia">{{ form.referencia.label }}</label>
+
+                    <div class="form-floating mb-3">
+                        {{ form.referencia }}
+                        {{ form.referencia.errors }}
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary" type="submit">Submit</button>
+                    </div>
+                </form>
+            </fieldset>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getIdSector() {
+        const idMunicipio = document.getElementById('municipio').value;
+        const idMunicipioSplit = idMunicipio.split('.')
+        console.log(idMunicipioSplit[0]);
+        //const municipioQuery = document.querySelector('#municipio').value;
+        console.log(idMunicipio);
+        const SECTOR_DATA = '/media/JSON/sectores.json';
+        const selectSectores = document.querySelector("#sector");
+        fetch(SECTOR_DATA)
+            .then((response) => response.json())
+            .then((sectores) => {
+                const HTMLResponseSector = sectores.map((element, x) =>
+                    (element.municipio_id == idMunicipioSplit[0])
+                        ?
+
+                        '<option  name="sector"  required >' + element.sector + '</option>'
+                        :
+                        ''
+                );
+
+                selectSectores.className = "select-visible";
+                selectSectores.className = "form-control text-center";
+
+                selectSectores.innerHTML = "<option value='' disabled selected hidden>-Elige Sector-</option>";
+                selectSectores.innerHTML += HTMLResponseSector;
+                console.log(HTMLResponseSector);
+            });
+    }
+    function getId() {
+        const idCiudad = document.getElementById('provincia').value;
+        const idCiudadSplit = idCiudad.split('.')
+        console.log(idCiudadSplit[0]);
+        const MUNI_DATA = '/media/JSON/municipios.json';
+        const selectMunicipios = document.querySelector("#municipio");
+
+        fetch(MUNI_DATA)
+            .then((response) => response.json())
+            .then((municipios) => {
+                const HTMLResponseMuni = municipios.map((element, x) =>
+                (element.provincia_id == idCiudadSplit[0]
+                    ?
+                    '<option name="municipio" value='+element.municipio_id+'.'+element.municipio+' required >' + element.municipio + '</option>'
+                    :
+                    '')
+                );
+
+                selectMunicipios.className = "select-visible";
+                selectMunicipios.className = "form-control text-center";
+                selectMunicipios.innerHTML = "<option class='form-control' value='' disabled selected hidden>-Elige Municipio-</option>";
+                selectMunicipios.innerHTML += HTMLResponseMuni;
+
+                console.log(HTMLResponseMuni);
+            });
+    }
+
+    const PROVI_DATA = '/media/JSON/provincias.json';
+    const select = document.querySelector("#provincia");
+    const foto = document.querySelector("#imagen-provincia")
+    console.log(select.dataset);
+    
+    fetch(PROVI_DATA)
+        .then((response) => response.json())
+        .then((provincias) => {
+            const HTMLResponseProvi = provincias.map((element, x) =>
+               // console.log(element.foto) +
+                '<option name="provincia" value="'+element.provincia_id+'.'+element.provincia+'" required >'+element.provincia+'</option>'
+            );
+            select.setAttribute("data-provincia", "element.provincia");
+            select.className = "form-control text-center";
+            select.innerHTML = "<option value='' disabled selected hidden>-Elige Provincia-</option>";
+            select.innerHTML += HTMLResponseProvi;
+            //console.log(select);
+        }); 
+
+</script>
+{% endblock %}
+
+{% block pagination %}{% endblock %}

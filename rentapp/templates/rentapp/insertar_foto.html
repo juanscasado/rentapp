@@ -1,0 +1,51 @@
+{% extends "base_generic.html" %}
+{% block title %}<title>Rentapp - Add Foto</title>{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <fieldset class="border p-4 rounded">
+                <h3 class="bi bi-images"> Add Foto</h3>
+                {% for x in renta_title %}
+                <legend class="text-center"><b><u>{{ x.direccion|title }}</u></b></legend>
+                {% endfor %}
+                <form action="{% url 'rentapp:insertar_foto' renta_id %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input hidden name="renta" value="{{ renta_id }}" type="text">
+                    {{ form.usertario.errors }}
+                    <div class="mb-3">
+                        <label for="customFileLang" class="form-label"><i class="bi bi-images"></i> Imagen</label>
+                        <input name="image_renta" type="file" class="form-control" id="customFileLang" lang="es">
+                        {{ form.image_renta.errors }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_name_foto_renta" class="form-label">{{ form.name_foto_renta.label }}</label>
+                        {{ form.name_foto_renta }}
+                        {{ form.name_foto_renta.errors }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="submit">Subir Foto</button>
+                        <a href="{% url 'rentapp:dashboard' user.id %}" class="btn btn-secondary">Dashboard</a>
+                    </div>
+                </form>
+            </fieldset>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        {% for x in datos_fotos %}
+        <div class="col-3">
+            <div class="card">
+                <img src="/media/{{ x.image_renta }}" class="card-img-top" alt="imagen-{{ x.id }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
