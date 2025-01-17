@@ -9,6 +9,10 @@ class User(AbstractUser):
         max_length=24,
     # default = "propietario",
     )  
+    phone_number = models.CharField(
+        max_length=12,
+    # default = "propietario",
+    )  
 
     def __str__(self):
         return f'{self.username}'
@@ -53,7 +57,7 @@ class Mensaje(models.Model):
       
 class Foto(models.Model):
     renta = models.ForeignKey(Renta, on_delete=models.CASCADE)
-    image_renta = models.ImageField(upload_to='gallery', default='gallery/static/images/no-img.jpg')
+    image_renta = models.ImageField(upload_to='gallery', default='static/rentapp/images/no-img.png')
     name_foto_renta = models.CharField(max_length=200)
 
     def __str__(self):

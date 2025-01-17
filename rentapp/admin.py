@@ -4,9 +4,9 @@ from .models import *
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
-        ("New Fields", {'fields': ('tipo', 'categoria')}),
+        ("New Fields", {'fields': ('phone_number', 'categoria')}),
     )
-    # list_display = ['username', 'email', 'tipo', 'categoria']
+    # list_display = ['username', 'email', 'phone_number', 'categoria']
 
 admin.site.register(Amistad)
 admin.site.register(Mensaje)

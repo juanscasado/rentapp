@@ -1,4 +1,4 @@
-import time
+# import time
 # from asgiref.sync import sync_to_async
 # import asyncio
 from django.core.paginator import Paginator
@@ -134,7 +134,7 @@ def insertar_user(request):
 
     return render(request, 'rentapp/insertar_user.html', {'mensajes':mensajes,'form': form})
 
-
+@login_required
 def insertar_foto(request, renta_id):
     datos_fotos = list(Foto.objects.filter(renta=renta_id).order_by("-id"))
     renta_title = list(Renta.objects.filter(id=renta_id))
@@ -218,6 +218,7 @@ def index(request):
         "rentas": rentas,
     }
     return render(request, "rentapp/index.html", context)
+
 @login_required
 def detail(request, renta_id):
 
@@ -254,7 +255,7 @@ def buscar(request):
         }
         response = render(request, "rentapp/buscar.html", context )
         return response
-
+@login_required
 def quien_es():
     pass
 
@@ -272,11 +273,11 @@ def dashboard(request, id_user):
     }
     return render(request, "rentapp/dashboard.html", context)
 
+@login_required
 def delete_renta(request, id_renta, user):
     renta = Renta.objects.filter(id=id_renta)
     renta.delete()
     return HttpResponseRedirect(f"../dashboard/{user}")
-
 
 def prueba(request):
 
