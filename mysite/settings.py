@@ -15,7 +15,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', default='sajfhjdhfjdhghteoeo')
 DEBUG = 'RENDER' not in os.environ
 # DEBUG = True
 #192.168.111.103', 'localhost', '127.0.0.1', '10.0.0.182', '192.168.112.103','192.168.37.103
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -142,7 +142,8 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # settings.py
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000  # Establece el límite que desees
+# DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000  
+# Establece el límite que desees
 
 AUTH_USER_MODEL = 'rentapp.User'
 
