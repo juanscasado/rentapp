@@ -69,7 +69,7 @@
         console.log(idMunicipioSplit[0]);
         //const municipioQuery = document.querySelector('#municipio').value;
         console.log(idMunicipio);
-        const SECTOR_DATA = '/media/JSON/sectores.json';
+        const SECTOR_DATA = '/static/JSON/sectores.json';
         const selectSectores = document.querySelector("#sector");
         fetch(SECTOR_DATA)
             .then((response) => response.json())
@@ -95,7 +95,7 @@
         const idCiudad = document.getElementById('provincia').value;
         const idCiudadSplit = idCiudad.split('.')
         console.log(idCiudadSplit[0]);
-        const MUNI_DATA = '/media/JSON/municipios.json';
+        const MUNI_DATA = '/static/JSON/municipios.json';
         const selectMunicipios = document.querySelector("#municipio");
 
         fetch(MUNI_DATA)
@@ -118,7 +118,7 @@
             });
     }
 
-    const PROVI_DATA = '/media/JSON/provincias.json';
+    const PROVI_DATA = '/static/JSON/provincias.json';
     const select = document.querySelector("#provincia");
     const foto = document.querySelector("#imagen-provincia")
     console.log(select.dataset);

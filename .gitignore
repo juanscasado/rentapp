@@ -19,10 +19,8 @@ __pycache__/
 *.env
 
 # Environments
-.envforrequierements
 .env
 .venv
-envforrequierements/
 env/
 venv/
 ENV/
