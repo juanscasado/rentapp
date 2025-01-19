@@ -1,4 +1,4 @@
-{% extends "base_generic.html" %}
+{% extends "base.html" %}
 {% block title %}<title>Index</title>{% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
       <div class="col mh-1">
         <div class="card shadow-sm">
           <div class="card-body mh-12">
-            <legend><b><u>Se Renta</u></b></legend>
+            <legend class="btn btn-primary "><b><u>En Renta</u></b></legend>
             <p class="card-text">Por:<i> {{ renta.user|title }}</i></p>
             <p class="card-text"><i>{{ renta.direccion|title|slice:75 }} ...</i></p>
             <!--fotos-->

@@ -1,6 +1,8 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Logged out" %}{% endblock %}
 
 {% block content %}
-<p>¡Sesión finalizada!</p>
-
-<a href="{% url 'login'%}">Haga clic aquí para iniciar sesión nuevamente.</a>
+<p>{% trans "Successfully logged out" %}.</p>
 {% endblock %}

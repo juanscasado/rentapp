@@ -39,7 +39,7 @@
         <nav class="navbar bg-transparent">
           <div class="container-fluid">
             {% if not user.is_authenticated %}     
-            <a href="{% url 'login' %}" class="btn btn-outline-primary position-left" type="button">Inicia sesión</a>
+            <a href="{% url 'login' %}" class="btn btn-primary position-left" type="button">Inicia sesión</a>
             {% endif %}
             <a class="navbar-brand" href="{% url 'rentapp:index' %}">
               <!-- <img class="rounded-circle" src="/media/gallery/rentapp_logo.png" alt="logo" width="50"> -->
