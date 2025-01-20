@@ -17,7 +17,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <fieldset class="border p-4 rounded">
-                <legend class="bi-plus-square-fill"> Nueva Renta</legend>
+                <legend class="bi-plus-square-fill h2"> Nuevo Local</legend>
                 <form action="{% url 'rentapp:insertar_renta' %}" method="post">
                     {% csrf_token %}
                     <!--usertario form-->
@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="d-grid">
-                        <button class="btn btn-primary" type="submit">Submit</button>
+                        <button class="btn btn-primary" type="submit">Crear</button>
                     </div>
                 </form>
             </fieldset>
