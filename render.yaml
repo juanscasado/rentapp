@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: mysite
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn mysite.wsgi --log-file -"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: mysite.settings
+    disk:
+      - mountPath: /var/www/media
+        persistent: true
+    webSockets: true
+    healthCheck:
+      path: /healthz
+      interval: 30s
+    nginx:
+      config: nginx.conf
