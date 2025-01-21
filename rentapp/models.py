@@ -57,7 +57,7 @@ class Mensaje(models.Model):
       
 class Foto(models.Model):
     renta = models.ForeignKey(Renta, on_delete=models.CASCADE)
-    image_renta = models.ImageField(upload_to='gallery', default='static/rentapp/images/no-img.png')
+    image_renta = models.ImageField(upload_to='', default='static/rentapp/images/no-img.png')
     name_foto_renta = models.CharField(max_length=200)
 
     def __str__(self):
