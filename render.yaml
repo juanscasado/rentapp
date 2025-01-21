@@ -8,7 +8,7 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: mysite.settings
     disk:
-      - mountPath: /var/www/media
+      - mountPath: /media
         persistent: true
     webSockets: true
     healthCheck:
