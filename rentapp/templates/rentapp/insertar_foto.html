@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
 {% block title %}<title>Rentapp - Add Foto</title>{% endblock %}
 
 {% block content %}
@@ -14,22 +16,24 @@
                     {% csrf_token %}
                     <input hidden name="renta" value="{{ renta_id }}" type="text">
                     {{ form.usertario.errors }}
-                    <div class="mb-3">
-                        <label for="customFileLang" class="form-label"><i class="bi bi-images"></i> Imagen</label>
-                        <input name="image_renta" type="file" class="form-control" id="customFileLang" lang="es" required>
-                        {{ form.image_renta.errors }}
-                    </div>
+                    <i class="bi bi-images"></i>
+                    {{ form.image_renta|as_crispy_field }}
 
-                    <div class="mb-3">
+                    {{ form.name_foto_renta|as_crispy_field }}
+                    <!-- <div class="mb-3">
                         <label for="id_name_foto_renta" class="form-label">{{ form.name_foto_renta.label }}</label>
                         {{ form.name_foto_renta }}
                         {{ form.name_foto_renta.errors }}
-                    </div>
+                    </div> -->
 
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" type="submit">Subir Foto</button>
-                        <a href="{% url 'rentapp:dashboard' user.id %}" class="btn btn-secondary">Dashboard</a>
-                    </div>
+                    <div class="m-4">
+                        <span>
+                            <button class="btn btn-primary" type="submit">Subir Foto</button>               
+                        </span>
+                        <span>
+                            <a href="{% url 'rentapp:dashboard' user.id %}" class="btn btn-secondary">Dashboard</a>
+                        </span>
+                        </div>
                 </form>
             </fieldset>
         </div>

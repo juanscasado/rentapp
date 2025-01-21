@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser
 from mysite import settings
 
 class User(AbstractUser): 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     
     categoria = models.CharField(
         max_length=24,

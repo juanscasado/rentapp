@@ -3,6 +3,8 @@ from . import views
 
 app_name = 'rentapp'
 urlpatterns = [
+    # register
+    path('register/', views.register, name='register'),
     # insertar User
     path('insertar_user/', views.insertar_user, name='insertar_user' ),
     # prueba url

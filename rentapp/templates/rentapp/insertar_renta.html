@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
 {% block title %} <title>Rentapp - Nueva Renta</title> {% endblock %}
 
 {% block content %}
@@ -20,36 +22,32 @@
                 <legend class="bi-plus-square-fill h2"> Nuevo Local</legend>
                 <form action="{% url 'rentapp:insertar_renta' %}" method="post">
                     {% csrf_token %}
-                    <!--usertario form-->
                     <input hidden name="user" value="{{user.id}}" type="text">
-                    {{ form.usertario.errors }}
+                    {{ form.user.errors }}
 
                     <!--dirección form-->
-                    <label for="id_direccion">{{ form.direccion.label }}</label>
 
                     <div class="form-floating mb-3">
 
-                        {{ form.direccion }}
+                        {{ form.direccion|as_crispy_field  }}
                         {{ form.direccion.errors }}
                     </div>
 
                     <!--provincia, municipio, sector form-->
                    
-                <div style="margin:10px 10px 10px 10px;" class=" flex-nowrap">
+                <div class=" flex-nowrap m-2" >
 
-                    <select onchange="getId()" id="provincia" name="provincia" required></select>
+                    <select class="m-4" onchange="getId()" id="provincia" name="provincia" required></select>
 
-                    <select class="select-hidden" onchange="getIdSector()" id="municipio" name="municipio"
+                    <select class="m-4 select-hidden" onchange="getIdSector()" id="municipio" name="municipio"
                         required></select>
 
-                    <select class="select-hidden" id="sector" name="sector"></select>
+                    <select class="m-4 select-hidden" id="sector" name="sector"></select>
                 </div>
 
                     <!--referencia form-->
-                    <label for="id_referencia">{{ form.referencia.label }}</label>
-
                     <div class="form-floating mb-3">
-                        {{ form.referencia }}
+                        {{ form.referencia|as_crispy_field }}
                         {{ form.referencia.errors }}
                     </div>
 

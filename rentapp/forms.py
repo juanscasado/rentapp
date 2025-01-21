@@ -42,8 +42,37 @@ class RentaForm(forms.ModelForm):
         fields = '__all__'
         
 
+import re
+
+
 class UserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+    phone_number = forms.CharField(max_length=12, required=True)
+
     class Meta:
         model = User
-        # fields = '__all__'
-        fields = ['username', 'email', 'password', 'phone_number']
+        fields = ['username', 'email', 'password', 'confirm_password', 'phone_number']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'confirm_password': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if not re.match(r'^\d{12}$', phone_number):
+            raise forms.ValidationError("El número de teléfono debe tener 12 dígitos.")
+        return phone_number
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+
+        return cleaned_data

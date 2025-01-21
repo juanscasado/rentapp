@@ -32,6 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'crispy_bootstrap4',
+
 ]
 
 MIDDLEWARE = [
@@ -149,3 +152,7 @@ AUTH_USER_MODEL = 'rentapp.User'
 # Configuración de django-registration
 ACCOUNT_ACTIVATION_DAYS = 7  # Número de días para activar la cuenta
 REGISTRATION_AUTO_LOGIN = True  # Iniciar sesión automáticamente después del registro
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"

@@ -19,6 +19,24 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Renta
 from .forms import RentaForm
 
+from django.contrib.auth import login, authenticate
+
+from .forms import UserForm
+
+def register(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            # Authenticate and login the user
+            new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            login(request, new_user)
+            return redirect(f'/dashboard/{user.id}')  # Redirect to a success page.
+    else:
+        form = UserForm()
+    return render(request, 'registration/registration_form.html', {'form': form})
 # def editar_renta(request, renta_id):
 #     renta = get_object_or_404(Renta, id=renta_id)
 #     if request.method == 'POST':
