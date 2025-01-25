@@ -8,10 +8,8 @@ class CustomUserAdmin(UserAdmin):
     )
     # list_display = ['username', 'email', 'phone_number', 'categoria']
 
-admin.site.register(Amistad)
-admin.site.register(Mensaje)
 admin.site.register(User, CustomUserAdmin)
 
-admin.site.register(Renta)
+admin.site.register(Local)
 admin.site.register(Foto)
 

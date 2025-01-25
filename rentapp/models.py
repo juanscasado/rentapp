@@ -11,8 +11,8 @@ class User(AbstractUser):
         max_length=24,
     # default = "propietario",
     )  
-    phone_number = models.CharField(
-        max_length=12,
+    phone = models.CharField(
+        max_length=11,
     # default = "propietario",
     )  
 
@@ -22,8 +22,11 @@ class User(AbstractUser):
   
     def get_categoria(self):
         return self.categoria
+    
  
-class Renta(models.Model):
+class Local(models.Model):
+
+    prop = models.CharField(max_length=33)    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     direccion = models.CharField(max_length=200)
     provincia = models.CharField(max_length=200, blank=True)
@@ -33,34 +36,12 @@ class Renta(models.Model):
 
     def __str__(self):
         return self.direccion
-
-class Amistad(models.Model):
-    renta = models.ForeignKey(Renta, on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    relacion = models.CharField(max_length=200, null=True)
-    pub_date = models.DateTimeField("fecha publicado", null=True)
-
-    def __str__(self):
-        return f'{self.id}'
-    # slug = models.SlugField(editable=False)
-
-    # def save(self, *args, **kwargs):
-    #     self.slug = slugify(self.title)
-    #     super().save(*args, **kwargs)
-
-class Mensaje(models.Model):
-    amistad = models.ForeignKey(Amistad, on_delete=models.CASCADE)
-    texto = models.CharField(max_length=250)
-    tipo = models.CharField(max_length=24, null=True )
-    pub_date = models.DateTimeField("fecha publicado", null=True)
     
-    def __str__(self):
-        return f"{self.amistad}"
-      
+
 class Foto(models.Model):
-    renta = models.ForeignKey(Renta, on_delete=models.CASCADE)
-    image_renta = models.ImageField(upload_to='', default='static/rentapp/images/no-img.png')
-    name_foto_renta = models.CharField(max_length=200)
+    local = models.ForeignKey(Local, on_delete=models.CASCADE)
+    image_local = models.ImageField(upload_to="uploads/%Y/%m/%d/")
+    name_foto_local = models.CharField(max_length=200)
 
     def __str__(self):
         return f'self.id'

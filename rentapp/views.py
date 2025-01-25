@@ -1,23 +1,17 @@
-# import time
-# from asgiref.sync import sync_to_async
-# import asyncio
+
 from django.core.paginator import Paginator
-# from geopy.geocoders import Nominatim
-# from django.shortcuts import redirect, render
 from django.shortcuts import  render
 # from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.http import  HttpResponse, HttpResponseRedirect
 from .forms import *
-from .models import *
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 # from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import logout
 
 # filepath: /c:/Users/WinFree/Desktop/repo/rentapp/rentapp/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Renta
-from .forms import RentaForm
+from django.shortcuts import render, redirect
+from .forms import LocalForm
 
 from django.contrib.auth import login, authenticate
 
@@ -153,9 +147,9 @@ def insertar_user(request):
     return render(request, 'rentapp/insertar_user.html', {'mensajes':mensajes,'form': form})
 
 @login_required
-def insertar_foto(request, renta_id):
-    datos_fotos = list(Foto.objects.filter(renta=renta_id).order_by("-id"))
-    renta_title = list(Renta.objects.filter(id=renta_id))
+def insertar_foto(request, local_id):
+    datos_fotos = list(Foto.objects.filter(local=local_id).order_by("-id"))
+    local_title = list(Local.objects.filter(id=local_id))
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -164,27 +158,27 @@ def insertar_foto(request, renta_id):
         if form.is_valid():
             # process the data in form.cleaned_data as required
             new_foto = Foto(
-                renta = form.cleaned_data['renta'],
-                image_renta = form.cleaned_data['image_renta'],
-                name_foto_renta = form.cleaned_data['name_foto_renta'])
+                local = form.cleaned_data['local'],
+                image_local = form.cleaned_data['image_local'],
+                name_foto_local = form.cleaned_data['name_foto_local'])
             new_foto.save()
             # obj = Foto.objects.latest('renta')
             # renta_id = obj
             # redirect to a new URL:
-            return HttpResponseRedirect(f'/insertar_foto/{renta_id}')
+            return HttpResponseRedirect(f'/insertar_foto/{local_id}')
     # if a GET (or any other method) we'll create a blank form
     else:
         # obj = Foto.objects.latest('renta')
         form = FotoForm()
         # datos_fotos = list(Foto.objects.all().order_by("-id"))
-    return render(request, 'rentapp/insertar_foto.html', {'renta_title':renta_title,'renta_id':renta_id,'datos_fotos': datos_fotos, 'form': form})
+    return render(request, 'rentapp/insertar_foto.html', {'renta_title':local_title,'local_id':local_id,'datos_fotos': datos_fotos, 'form': form})
 
 @login_required
-def insertar_renta(request):
+def insertar_local(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
-        form = RentaForm(request.POST)
+        form = LocalForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
             provincia_nombre = form.cleaned_data['provincia'].split('.')
@@ -198,17 +192,19 @@ def insertar_renta(request):
 
             # process the data in form.cleaned_data as required
             # ...
-            new_renta = Renta(
+            new_local = Local(
                 user = form.cleaned_data['user'],
                 direccion = direccion_full,
                 sector = form.cleaned_data['sector'],
                 municipio = municipio_nombre[1],
                 provincia = provincia_nombre[1],
                 referencia = form.cleaned_data['referencia'],
+                prop = form.cleaned_data['prop'],
+
                 # pub_date = time.strftime('%Y-%m-%d %I:%M'),
                 )
-            new_renta.save()
-            obj = Renta.objects.latest('id')
+            new_local.save()
+            obj = Local.objects.latest('id')
             renta_id = obj
 
             # renta_direccion = obj.direccion
@@ -218,31 +214,31 @@ def insertar_renta(request):
             return HttpResponseRedirect(f'/insertar_foto/{renta_id.id}')
     # if a GET (or any other method) we'll create a blank form
     else:
-        form = RentaForm()
-    return render(request, 'rentapp/insertar_renta.html', {'form': form})
+        form = LocalForm()
+    return render(request, 'rentapp/insertar_local.html', {'form': form})
 
 def index(request):
-    rentas = list(Renta.objects.all().order_by('-id'))
-    fotos_rentas = list(Foto.objects.all().values().order_by('-id'))
+    locals = list(Local.objects.all().order_by('-id'))
+    fotos_local = list(Foto.objects.all().values().order_by('-id'))
     # fotos_rentas = list(Foto.objects.all().select_related('renta').values(
     #     'renta__usertario', 'renta__id', 'renta__direccion',
     #     'id', 'image_renta', 'name_foto_renta').order_by('-id'))
-    p = Paginator(rentas, 4)
+    p = Paginator(locals, 4)
     page = request.GET.get('page')
-    rentas = p.get_page(page)
+    local = p.get_page(page)
 
     context = {
-        "fotos_rentas":fotos_rentas,
-        "rentas": rentas,
+        "fotos_local":fotos_local,
+        "local": local,
     }
     return render(request, "rentapp/index.html", context)
 
 @login_required
-def detail(request, renta_id):
+def detail(request, local_id):
 
     try:
-        fotos = Foto.objects.filter(renta=renta_id)
-        renta_location = Renta.objects.get(pk=renta_id)
+        fotos = Foto.objects.filter(local=local_id)
+        local_location = Local.objects.get(pk=local_id)
         # geolocator = Nominatim(user_agent="rentapp", timeout=10)
         # location = geolocator.geocode(renta_location.direccion)
         location = ""
@@ -252,7 +248,7 @@ def detail(request, renta_id):
     context = {
             "fotos" : fotos,
             "location" : location,
-            "renta_location" : renta_location,
+            "local_location" : local_location,
         }
     return render(request, "rentapp/detail.html", context)
 
@@ -261,14 +257,14 @@ def buscar(request):
     # br = Renta.objects.all()
     if 'buscar' in request.method:
         b = request.post(request, "buscar")
-        q_rentas = Renta.objects.filter(direccion__search = b)
+        q_local = Local.objects.filter(direccion__search = b)
     else:
-        q_rentas = Renta.objects.all().order_by('-id')
-        p = Paginator(q_rentas, 5)
+        q_local = Local.objects.all().order_by('-id')
+        p = Paginator(q_local, 5)
         page = request.GET.get("page")
-        rentas = p.get_page(page)
+        local = p.get_page(page)
         context = {
-        "rentas" : rentas,
+        "local" : local,
         "fotos" : list(Foto.objects.values()),
         }
         response = render(request, "rentapp/buscar.html", context )
@@ -279,22 +275,22 @@ def quien_es():
 
 @login_required
 def dashboard(request, id_user):
-    quien_es = User.objects.all().filter(id=id_user).values("phone_number")[0]['phone_number']
+    quien_es = User.objects.all().filter(id=id_user).values("phone", "id")[0]
     # tener todas las rentas del usuario
-    rentas = Renta.objects.all().filter(user=id_user).order_by('-id')
+    local = Local.objects.all().filter(user=id_user).order_by('-id')
     # user_app = User.objects.all().filter(usertario=id_rendatario).order_by('-id')
     print(quien_es)
-    print(rentas)
+    print(local)
     context = {
         "quien_es": quien_es,
-        "rentas": rentas,
+        "local": local,
     }
     return render(request, "rentapp/dashboard.html", context)
 
 @login_required
-def delete_renta(request, id_renta, user):
-    renta = Renta.objects.filter(id=id_renta)
-    renta.delete()
+def delete_local(request, id_local, user):
+    local = Local.objects.filter(id=id_local)
+    local.delete()
     return HttpResponseRedirect(f"../dashboard/{user}")
 
 def prueba(request):
@@ -302,8 +298,8 @@ def prueba(request):
     # amistad_userdador = Amistad.objects.filter(userdador = userdador_id).select_related('renta','usertario','userdador').values(
     #     'renta', 'userdador', 'usertario').order_by('-id')    # id, mensaje, pub_date, relacion, userdador, userdador_id, usertario, usertario_id
     # # amistad = Amistad.objects.filter(userdador=userdador_id).values("id", 'pub_date', 'relacion', 'userdador', 'usertario',)
-    rentas = list(Renta.objects.all().values())
-    fotos_rentas = list(Foto.objects.all().values())
+    local = list(Local.objects.all().values())
+    fotos_local = list(Foto.objects.all().values())
 
-    return  HttpResponse(f"rentas: {rentas}----Fotos:{fotos_rentas}" )
+    return  HttpResponse(f"local: {local}----Fotos:{fotos_local}" )
 

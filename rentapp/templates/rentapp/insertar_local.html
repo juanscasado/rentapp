@@ -20,33 +20,36 @@
         <div class="col-md-8">
             <fieldset class="border p-4 rounded">
                 <legend class="bi-plus-square-fill h2"> Nuevo Local</legend>
-                <form action="{% url 'rentapp:insertar_renta' %}" method="post">
+                <form action="{% url 'rentapp:insertar_local' %}" method="post">
                     {% csrf_token %}
+                    
                     <input hidden name="user" value="{{user.id}}" type="text">
                     {{ form.user.errors }}
-
                     <!--dirección form-->
-
-                    <div class="form-floating mb-3">
-
+                    <div class="m-4" >
                         {{ form.direccion|as_crispy_field  }}
                         {{ form.direccion.errors }}
                     </div>
-
                     <!--provincia, municipio, sector form-->
-                   
-                <div class=" flex-nowrap m-2" >
-
+                <div  class="m-4">
                     <select class="m-4" onchange="getId()" id="provincia" name="provincia" required></select>
-
+                    <br>
                     <select class="m-4 select-hidden" onchange="getIdSector()" id="municipio" name="municipio"
-                        required></select>
-
+                        required>
+                    </select>
+                    <br>
                     <select class="m-4 select-hidden" id="sector" name="sector"></select>
                 </div>
+                <div class="m-4" >
 
+                    <select class="form-control text-center" name="prop" id="id_prop" required>
+                        <option value="">--Proposito de Local--</option>
+                        <option value="venta">Venta</option>
+                        <option value="renta">Renta</option>
+                    </select>
+                    </div>
                     <!--referencia form-->
-                    <div class="form-floating mb-3">
+                    <div class="m-4 ">
                         {{ form.referencia|as_crispy_field }}
                         {{ form.referencia.errors }}
                     </div>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
-{% block title %}<title>Rentapp - Add Foto</title>{% endblock %}
+{% block title %}<title>Local - Add Foto</title>{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -10,16 +10,16 @@
             <fieldset class="border p-4 rounded">
                 <h3 class="bi bi-images"> Add Foto</h3>
                 {% for x in renta_title %}
-                <legend class="text-center"><b><u>{{ x.direccion|title }}</u></b></legend>
+                <b><u>{{ x.direccion|title }}</u></b>
                 {% endfor %}
-                <form action="{% url 'rentapp:insertar_foto' renta_id %}" method="post" enctype="multipart/form-data">
+                <form action="{% url 'rentapp:insertar_foto' local_id %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input hidden name="renta" value="{{ renta_id }}" type="text">
+                    <input hidden name="local" value="{{ local_id }}" type="text">
                     {{ form.usertario.errors }}
                     <i class="bi bi-images"></i>
-                    {{ form.image_renta|as_crispy_field }}
+                    {{ form.image_local|as_crispy_field }}
 
-                    {{ form.name_foto_renta|as_crispy_field }}
+                    {{ form.name_foto_local|as_crispy_field }}
                     <!-- <div class="mb-3">
                         <label for="id_name_foto_renta" class="form-label">{{ form.name_foto_renta.label }}</label>
                         {{ form.name_foto_renta }}
@@ -45,7 +45,7 @@
         {% for x in datos_fotos %}
         <div class="col-3">
             <div class="card">
-                <img src="/media/{{ x.image_renta }}" class="card-img-top" alt="imagen-{{ x.id }}">
+                <img src="/media/{{ x.image_local }}" class="card-img-top" alt="imagen-{{ x.id }}">
             </div>
         </div>
         {% endfor %}
