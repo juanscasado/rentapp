@@ -6,13 +6,32 @@
 {% block content %}
   {% if local %}
   <!--custom cards-->
+  
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
     {% for locale in local %}
       <div class="col mh-1">
         <div class="card shadow-sm">
           <div class="card-body mh-12">
-            <legend class="btn btn-primary "><b><u>En {{ locale.prop|title }}</u></b></legend>
-            <p class="card-text">Por:<i> {{ locale.user|title }}</i></p>
+            
+            <div > 
+              <span 
+                style="
+                  color: #9dc2e2;
+                  font-size: 1.6rem;"
+                class="card-text bi-house ">
+              </span> 
+              <span 
+                style="color: rgb(254, 14, 14);
+                       font-weight: bold;">
+                {{ locale.user|upper }}
+              </span>
+            </div>
+
+            <div >
+              <h1 style="color: rgb(254, 14, 14); font-size: 4.4rem; font-weight: bolder;">
+                {{ locale.prop|upper }}
+              </h1>
+            </div>
             <p class="card-text"><i>{{ locale.direccion|title|slice:75 }} ...</i></p>
             <!--fotos-->
             <div style="display: -webkit-inline-flex; ">
@@ -32,8 +51,9 @@
               {% endif %}
             </div>
               <div class="btn-group">
-                <a 
-                  class="btn btn-outline-primary btn-lg " 
+                <a
+                  style="font-weight: bolder;" 
+                  class="btn btn-primary btn-lg" 
                   target="_parent" 
                   href="{% url 'rentapp:detail' locale.id %}"> 
                   Ver
