@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: rentapp-render
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn mysite.wsgi:application"
+
+    envVars:
+      DJANGO_SETTINGS_MODULE: "mysite.settings"
+      DEBUG: "False"
+      MEDIA_URL: "/media/"
+      MEDIA_ROOT: "/var/www/media/"  # Set a proper media directory path here.
+
+    disk:
+      - name: media-storage
+        mountPath: /var/www/media  # Mount media files to this directory.

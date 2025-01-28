@@ -40,7 +40,7 @@ class Local(models.Model):
 
 class Foto(models.Model):
     local = models.ForeignKey(Local, on_delete=models.CASCADE)
-    image_local = models.ImageField(upload_to="uploads/%Y/%m/%d/")
+    image_local = models.ImageField(upload_to="var/www/media/")
     name_foto_local = models.CharField(max_length=200)
 
     def __str__(self):

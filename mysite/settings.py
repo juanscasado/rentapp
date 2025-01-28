@@ -1,3 +1,4 @@
+import yaml
 import os
 from pathlib import Path
 
@@ -134,8 +135,14 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
+# Load the YAML file
+with open("/path/to/config.yaml", "r") as yaml_file:
+    config = yaml.safe_load(yaml_file)
+
 MEDIA_URL = '/media/'
+# Set MEDIA_ROOT from YAML
+MEDIA_ROOT = config.get("media", {}).get("root", "/default/path/if/not/set/")
+# MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
 
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)

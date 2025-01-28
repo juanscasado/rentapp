@@ -223,7 +223,7 @@ def index(request):
     # fotos_rentas = list(Foto.objects.all().select_related('renta').values(
     #     'renta__usertario', 'renta__id', 'renta__direccion',
     #     'id', 'image_renta', 'name_foto_renta').order_by('-id'))
-    p = Paginator(locals, 4)
+    p = Paginator(locals, 6)
     page = request.GET.get('page')
     local = p.get_page(page)
 
