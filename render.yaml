@@ -13,8 +13,8 @@ services:
       - key: MEDIA_URL
         value: "/media/"
       - key: MEDIA_ROOT
-        value: "/var/www/media"  # Set a proper media directory path here.
+        value: "/var/www/media"  
 
     disk:
       - name: media-storage
-        mountPath: /var/www/media  # Mount media files to this directory.
+        mountPath: /var/www/media  
