@@ -6,10 +6,14 @@ services:
     startCommand: "gunicorn mysite.wsgi:application"
 
     envVars:
-      DJANGO_SETTINGS_MODULE: "mysite.settings"
-      DEBUG: "False"
-      MEDIA_URL: "/media/"
-      MEDIA_ROOT: "/var/www/media/"  # Set a proper media directory path here.
+      - key: DJANGO_SETTINGS_MODULE
+        value: "mysite.settings"
+      - key: DEBUG
+        value: "False"
+      - key: MEDIA_URL
+        value: "/media/"
+      - key: MEDIA_ROOT
+        value: "/var/www/media"  # Set a proper media directory path here.
 
     disk:
       - name: media-storage
