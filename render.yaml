@@ -15,6 +15,6 @@ services:
       - key: MEDIA_ROOT
         value: "/var/www/media"  
 
-    disk:
+    disks:
       - name: media-storage
         mountPath: /var/www/media  
