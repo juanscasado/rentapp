@@ -16,6 +16,3 @@ python manage.py collectstatic --noinput
 if [ ! -d "media" ]; then
   mkdir media
 fi
-
-# Configurar permisos
-chmod -R 755 media
