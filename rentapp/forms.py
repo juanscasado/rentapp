@@ -7,8 +7,8 @@ class FotoForm(forms.ModelForm):
         # fields = "__all__"
         fields = ['local', 'image_local', 'name_foto_local']
         widgets = {
-            'image_local': forms.FileInput(attrs={'title':'Asd','style':'margin:10px 0px 10px 10px;','class':'form-control form-control-md '}),
-            'name_foto_local': forms.TextInput(attrs={'style':'margin:10px 10px 10px 0px;','class':'form-control ', 'placeholder': 'ex: Descripción Foto.'}),
+            'image_local': forms.FileInput(attrs={'class':'form-control '}),
+            'name_foto_local': forms.TextInput(attrs={'class':'form-control'}),
         }
         labels = {
             'name_foto_local': 'Descripción',

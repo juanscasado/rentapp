@@ -12,28 +12,21 @@
                 {% for x in renta_title %}
                 <b><u>{{ x.direccion|title }}</u></b>
                 {% endfor %}
-                <form action="{% url 'rentapp:insertar_foto' local_id %}" method="post" enctype="multipart/form-data">
+                <form id="fotoForm" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input hidden name="local" value="{{ local_id }}" type="text">
                     {{ form.usertario.errors }}
                     <i class="bi bi-images"></i>
                     {{ form.image_local|as_crispy_field }}
-
                     {{ form.name_foto_local|as_crispy_field }}
-                    <!-- <div class="mb-3">
-                        <label for="id_name_foto_renta" class="form-label">{{ form.name_foto_renta.label }}</label>
-                        {{ form.name_foto_renta }}
-                        {{ form.name_foto_renta.errors }}
-                    </div> -->
-
-                    <div class="m-4">
-                        <span>
-                            <button class="btn btn-primary" type="submit">Subir Foto</button>               
-                        </span>
-                        <span>
-                            <a href="{% url 'rentapp:dashboard' user.id %}" class="btn btn-secondary">Dashboard</a>
-                        </span>
-                        </div>
+                    <br>
+                    <span>
+                        <button class="btn btn-primary" type="submit">Subir Foto</button>               
+                    </span>
+                    <span>
+                        <a href="{% url 'rentapp:dashboard' user.id %}" class="btn btn-secondary">Dashboard</a>
+                    </span>
+                    </div>
                 </form>
             </fieldset>
         </div>
@@ -41,7 +34,7 @@
 </div>
 
 <div class="container mt-5">
-    <div class="row">
+    <div class="row" id="fotosContainer">
         {% for x in datos_fotos %}
         <div class="col-3">
             <div class="card">
@@ -51,5 +44,48 @@
         {% endfor %}
     </div>
 </div>
-{% endblock %}
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#fotoForm').on('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: "{% url 'rentapp:insertar_foto' local_id %}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    loadFotos();
+                    fotoForm.reset();
+                },
+                error: function(response) {
+                    alert('Error al subir la foto');
+                }
+            });
+        });
+
+        function loadFotos() {
+            $.ajax({
+                url: "{% url 'rentapp:obtener_fotos' local_id %}",
+                type: 'GET',
+                success: function(response) {
+                    $('#fotosContainer').html('');
+                    response.fotos.forEach(function(foto) {
+                        $('#fotosContainer').append(
+                            '<div class="col-3"><div class="card"><img src="' + foto.image_local + '" class="card-img-top" alt="imagen-' + foto.id + '"></div></div>'
+                        );
+                    });
+                },
+                error: function(response) {
+                    alert('Error al cargar las fotos');
+                }
+            });
+        }
+
+        loadFotos();
+    });
+</script>
+{% endblock %}

@@ -1,3 +1,7 @@
+import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 
 from django.core.paginator import Paginator
 from django.shortcuts import  render
@@ -147,31 +151,55 @@ def insertar_user(request):
     return render(request, 'rentapp/insertar_user.html', {'mensajes':mensajes,'form': form})
 
 @login_required
+@csrf_exempt
 def insertar_foto(request, local_id):
-    datos_fotos = list(Foto.objects.filter(local=local_id).order_by("-id"))
-    local_title = list(Local.objects.filter(id=local_id))
-    # if this is a POST request we need to process the form data
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
         form = FotoForm(request.POST, request.FILES)
-        # check whether it's valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required
-            new_foto = Foto(
-                local = form.cleaned_data['local'],
-                image_local = form.cleaned_data['image_local'],
-                name_foto_local = form.cleaned_data['name_foto_local'])
+            new_foto = form.save(commit=False)
+            new_foto.local_id = local_id
             new_foto.save()
-            # obj = Foto.objects.latest('renta')
-            # renta_id = obj
-            # redirect to a new URL:
-            return HttpResponseRedirect(f'/insertar_foto/{local_id}')
-    # if a GET (or any other method) we'll create a blank form
+            return JsonResponse({'id': new_foto.id, 'image_local': new_foto.image_local.url})
+        else:
+            return JsonResponse({'error': form.errors}, status=400)
     else:
-        # obj = Foto.objects.latest('renta')
+        datos_fotos = list(Foto.objects.filter(local=local_id).order_by("-id"))
+        local_title = list(Local.objects.filter(id=local_id))
         form = FotoForm()
-        # datos_fotos = list(Foto.objects.all().order_by("-id"))
-    return render(request, 'rentapp/insertar_foto.html', {'renta_title':local_title,'local_id':local_id,'datos_fotos': datos_fotos, 'form': form})
+        return render(request, 'rentapp/insertar_foto.html', {'renta_title': local_title, 'local_id': local_id, 'datos_fotos': datos_fotos, 'form': form})
+    
+
+@login_required
+def obtener_fotos(request, local_id):
+    datos_fotos = list(Foto.objects.filter(local=local_id).order_by("-id"))
+    fotos = [{'id': foto.id, 'image_local': foto.image_local.url} for foto in datos_fotos]
+    return JsonResponse({'fotos': fotos})
+# @login_required
+# def insertar_foto(request, local_id):
+#     datos_fotos = list(Foto.objects.filter(local=local_id).order_by("-id"))
+#     local_title = list(Local.objects.filter(id=local_id))
+#     # if this is a POST request we need to process the form data
+#     if request.method == 'POST':
+#         # create a form instance and populate it with data from the request:
+#         form = FotoForm(request.POST, request.FILES)
+#         # check whether it's valid:
+#         if form.is_valid():
+#             # process the data in form.cleaned_data as required
+#             new_foto = Foto(
+#                 local = form.cleaned_data['local'],
+#                 image_local = form.cleaned_data['image_local'],
+#                 name_foto_local = form.cleaned_data['name_foto_local'])
+#             new_foto.save()
+#             # obj = Foto.objects.latest('renta')
+#             # renta_id = obj
+#             # redirect to a new URL:
+#             return HttpResponseRedirect(f'/insertar_foto/{local_id}')
+#     # if a GET (or any other method) we'll create a blank form
+#     else:
+#         # obj = Foto.objects.latest('renta')
+#         form = FotoForm()
+#         # datos_fotos = list(Foto.objects.all().order_by("-id"))
+#     return render(request, 'rentapp/insertar_foto.html', {'renta_title':local_title,'local_id':local_id,'datos_fotos': datos_fotos, 'form': form})
 
 @login_required
 def insertar_local(request):
@@ -269,6 +297,7 @@ def buscar(request):
         }
         response = render(request, "rentapp/buscar.html", context )
         return response
+
 @login_required
 def quien_es():
     pass
@@ -289,8 +318,23 @@ def dashboard(request, id_user):
 
 @login_required
 def delete_local(request, id_local, user):
+    # Obtener todas las fotos asociadas al local
+    fotos = Foto.objects.filter(local=id_local)
+    
+    # Eliminar los archivos de las fotos del sistema de archivos
+    for foto in fotos:
+        if foto.image_local:
+            image_path = os.path.join(settings.MEDIA_ROOT, str(foto.image_local))
+            if os.path.exists(image_path):
+                os.remove(image_path)
+    
+    # Eliminar las fotos de la base de datos
+    fotos.delete()
+    
+    # Eliminar el local
     local = Local.objects.filter(id=id_local)
     local.delete()
+    
     return HttpResponseRedirect(f"../dashboard/{user}")
 
 def prueba(request):

@@ -19,6 +19,9 @@ urlpatterns = [
     path('insertar_local/', views.insertar_local, name='insertar_local'),
     # ex: /rentapp/insertar_foto/
     path('insertar_foto/<int:local_id>', views.insertar_foto, name='insertar_foto'),
+    # ex: /rentapp/obtener_fotos/3/
+    path('obtener_fotos/<int:local_id>/', views.obtener_fotos, name='obtener_fotos'),
+
 
     # ex: /rentapp/dashboard usertario
     path('dashboard/<int:id_user>', views.dashboard, name='dashboard'),
