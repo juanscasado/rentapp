@@ -15,33 +15,29 @@
             
             <div > 
               <span 
-                style="
-                  color: #9dc2e2;
-                  font-size: 1.6rem;"
-                class="card-text bi-house ">
+               
+                class="card-text bi-person ">
               </span> 
-              <span 
-                style="color: rgb(254, 14, 14);
-                       font-weight: bold;">
+              <span>
                 {{ locale.user|upper }}
               </span>
             </div>
 
             <div >
-              <h1 style="color: rgb(254, 14, 14); font-size: 4.4rem; font-weight: bolder;">
+              <h1>
                 {{ locale.prop|upper }}
               </h1>
             </div>
-            <p class="card-text"><i>{{ locale.direccion|title|slice:75 }} ...</i></p>
+            <p class="card-text">{{ locale.direccion|title|slice:75 }} ...</p>
             <!--fotos-->
-            <div style="display: -webkit-inline-flex; ">
+            <div>
               {% if fotos_local %}
               {% for foto in fotos_local|slice:2 %}
                   {% if locale.id == foto.local_id %}
-                    <a target="_parent" href="{% url 'rentapp:detail' locale.id %}">
-                      <img style="margin: 4px; height: 60px;width: 50px;" class="fotos"
-                        src="/media/{{ foto.image_local }}" alt="{{ foto.name_foto_local }}" />
-                    </a>
+                  <a target="_parent" href="{% url 'rentapp:detail' locale.id %}">
+                    <img style="margin: 4px; height: 60px;width: 50px;" class="fotos"
+                      src="/media/{{ foto.image_local }}" alt="{{ foto.name_foto_local }}" />
+                  </a>
                 
                   {% endif %}
               {% endfor %}
@@ -52,7 +48,6 @@
             </div>
               <div class="btn-group">
                 <a
-                  style="font-weight: bolder;" 
                   class="btn btn-primary btn-lg" 
                   target="_parent" 
                   href="{% url 'rentapp:detail' locale.id %}"> 
@@ -66,8 +61,12 @@
             </div>
 
             <div class="align-items-center mt-2">
-              <p class="card-text"><i>Referencia</i>: <u>{{ locale.referencia }}</u></p>
-              
+              <p class="card-text">
+                Referencia: 
+                <u>
+                  {{ locale.referencia }}
+                </u>
+              </p>
             </div>
           </div>
         </div>
@@ -76,11 +75,12 @@
   </div>
 
   {% else %}
-  <p>No Lentas disponibles.</p>
+  <p>No Locales disponibles.</p>
   {% endif %}
   
  <!--pagination-->        
  {% block pagination %}
+ {% if local %}
  <nav aria-label="Page navigation example">
    <p>{{ local.number }} of {{local.paginator.num_pages }}</p>
    <ul class="pagination">
@@ -94,6 +94,7 @@
      {% endif %}
    </ul>
  </nav>
+ {% endif %}
  {% endblock %}
 </div>
 
