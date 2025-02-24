@@ -87,67 +87,50 @@
                     </a>
                   </li>
                   {% if user.is_authenticated %}
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
-                      data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-menu-app-fill" style="font-size: 24px;"></i>
-                      <span class="ms-2">Menú</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a class="dropdown-item d-flex align-items-center"
+                  
+                    <ul class="nav flex-column">
+                      <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2"
                           href="{% url 'rentapp:dashboard' user.id %}">
                           <i class="bi bi-house me-2"></i> Dashboard
                         </a>
                       </li>
-                      <li>
-                        <a class="dropdown-item d-flex align-items-center" href="{% url 'rentapp:insertar_local' %}">
+                      <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{% url 'rentapp:insertar_local' %}">
                           <i class="bi bi-plus-square-fill me-2"></i> Local
                         </a>
                                               
                       </li>
-                      <!-- <li>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                          <i class="bi bi-envelope me-2"></i>
-                          Mensajes
-                        </a>
-                      </li> -->
-                      <li>
+                 
+                      <li class="nav-item">
                         <hr class="dropdown-divider">
                       </li>
-                      <li>
-                        <a class="dropdown-item d-flex align-items-center"
+                      <li class="nav-item">
+
+                        <a class="nav-link d-flex align-items-center gap-2"
                           href="{% url 'rentapp:logout_user'%}?next={{request.path}}">
                           <i class="bi bi-door-closed-fill me-2"></i>
                           Cerrar sesión
                         </a>
                       </li>
                     </ul>
-                  </li>
                   {% else %}
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
-                      data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-menu-app-fill" style="font-size: 24px;"></i>
-                      <span class="ms-2">Menú</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <a href="{% url 'rentapp:register' %}"
-                        class="dropdown-item d-flex align-items-center">
+                  
+                    <ul class="nav flex-column">
+                      <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{% url 'rentapp:register' %}">
                         <i class="bi bi-door-open-fill me-2"></i>
                         Registrarse
                         </a>
                       </li>
-                      <li>
-                        <a href="{% url 'login'%}?next={{request.path}}" 
+                      <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{% url 'login'%}?next={{request.path}}" 
                           class="dropdown-item d-flex align-items-center">
                           <i class="bi bi-door-open-fill me-2"></i>
                           Iniciar sesión
                         </a>
                       </li> 
                     </ul>
-                  </li>
                   {% endif %}
                 </ul>
                 <form class="d-flex mt-3" role="search">
