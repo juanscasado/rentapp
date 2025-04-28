@@ -1,6 +1,8 @@
 from django import forms
 from .models import *
 
+import re
+
 class FotoForm(forms.ModelForm):
     class Meta:
         model = Foto
@@ -18,19 +20,13 @@ class FotoForm(forms.ModelForm):
 class LocalForm(forms.ModelForm):
     class Meta:
         model = Local
-        fields = '__all__'
-        # fields = ['prop', 'direccion', 'referencia', 'provincia', 'municipio', 'sector', 'user']
+        # fields = '__all__'
+        fields = ['prop', 'direccion', 'referencia', 'provincia', 'municipio', 'sector', 'user']
         widgets = {
-            'direccion': forms.TextInput(attrs={'autofocus':''}),
+            'direccion': forms.TextInput(attrs={'autofocus':'', 'placeholder':' ...Calle y No. Casa | Apto | Planta.'}),
+            'referencia': forms.TextInput(attrs={'placeholder':' ...Referir en camino para proximo destino.'}),
+
         }
-        # labels = {
-        #     'prop': 'Proposito',
-        # }
-
-        
-
-import re
-
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)

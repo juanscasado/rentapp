@@ -6,7 +6,6 @@
 {% block content %}
   {% if local %}
   <!--custom cards-->
-  
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
     {% for locale in local %}
       <div class="col mh-1">
@@ -77,8 +76,9 @@
   {% else %}
   <p>No Locales disponibles.</p>
   {% endif %}
-  
- <!--pagination-->        
+{% endblock %}
+
+ <!--pagination Block-->        
  {% block pagination %}
  {% if local %}
  <nav aria-label="Page navigation example">
@@ -98,4 +98,3 @@
  {% endblock %}
 </div>
 
-{% endblock %}

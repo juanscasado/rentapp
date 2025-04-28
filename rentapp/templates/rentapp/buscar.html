@@ -2,45 +2,14 @@
 {% block title %} <title>Rentapp - Buscar</title> {% endblock %}
 
 {% block content %}
-<h1>Rentapp - Buscar</h1>
-<div class="row">
-  {% if rentas %}
-  <h3>Resultados</h3>
-  {% for renta in rentas %}
-  <div class="content">
-    <fieldset style="background-color : #e9ecef">
-      <legend>Información Renta</legend>
-      <dl>
-        <dt><u>Local:</u></dt>
-        <dd><a target="_blank" href="{% url 'rentapp:detail' renta.id %}">{{ renta.direccion }}</a></dd>
-        <!--Probando fotos-->
-        {% for foto in fotos %}
-        {% if foto.renta_id == renta.id %}
-        <a target="_blank" href="/media/{{ foto.image_renta }}">
-          <img style="width: 75px; height: 65px;" class="fotos" src="/media/{{ foto.image_renta }}"
-            alt="{{ foto.name_foto_renta }}" />
-        </a>
 
-        {% endif %}
-        {% endfor %}
-        <dt><u>Referencia:</u></dt>
-        <dd>{{ renta.referencia }}</dd>
-        <dt><u>Contactar:</u></dt>
-        <dd>
-          <a href="mailto:{{renta.e_mail}}" target="_blank" rel="noopener noreferrer"><i class="bi bi-envelope"></i></a>
-          <a target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp" title="Contactar con Whatapp."></i></a>
-        </dd>
-        <dt><u>Publicado:</u></dt>
-        <dd>{{ renta.pub_date }}</dd>
-        <!-- <dt>id:</dt> 
-                <dd>{{ renta.id }}</dd>
-                -->
-      </dl>
-    </fieldset>
-  </div>
-  {% endfor %}
-  {% else %}
-  <h3>"No hay disponibles"</h3>
-  {% endif %}
+<h1>Hola</h1>
 
-  {% endblock %}
+<h3>{{ buscar }} </h3>
+<form action="{% url 'rentapp:buscar' %}" method="post" >
+  {% csrf_token %}
+  <input name="search" class="form" type="search" placeholder="Buscar" aria-label="Search" type="submit">
+  <button name="search"	 class="btn btn-outline-primary" type="submit">Buscar</button>
+</form>
+
+{% endblock %}

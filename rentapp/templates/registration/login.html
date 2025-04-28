@@ -17,9 +17,10 @@
                 {{ form | crispy }}
                 <div class="d-grid m-4">
 
-                <input class="btn btn-primary" type="submit" value="{% trans 'Log in' %}" />
                 <input type="hidden" name="next" value="{{ next }}" />
                 </div>
+                <input class="btn btn-primary" type="submit" value="{% trans 'Log in' %}" />
+
 
               </form>
           </fieldset>

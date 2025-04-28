@@ -11,7 +11,10 @@
         <legend class="bi-house h2">{% trans "Register for an account" %}</legend>
 
         <form method="post" action="{% url 'rentapp:register' %}">
+
           {% csrf_token %}
+          <div class="d-grid m-4">
+
           {{form|crispy}}
           <!-- {{ form.username|as_crispy_field }} -->
           <!-- {% for field in form %}
@@ -28,9 +31,9 @@
             {% endif %}
           </div>
           {% endfor %} -->
-          <div class="d-grid m-4">
-            <input class="btn btn-primary" type="submit" value="{% trans 'Register' %}">
           </div>
+          <input class="btn btn-primary" type="submit" value="{% trans 'Register' %}">
+
         </form>
       </fieldset>
     </div>

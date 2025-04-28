@@ -23,6 +23,9 @@
     .pagination {
       justify-content: center;
     }
+    .card {
+      min-height: 325px;
+    }
   </style>
   <!-- Add additional CSS in static file -->
   <!-- {% load static %} -->
@@ -35,8 +38,11 @@
       <!--Header-->
       {% block header %}
       <header class="col-12">
-        <h1 class="display-1">RentAventa</h1>
-        <p class="lead">Renta, compra y venta.</p>
+        <a target="_parent" href="{% url 'rentapp:index' %}">
+          <h1 class="display-1" >RentAventa</h1>
+        </a>
+
+          <p class="lead">Renta, compra y venta.</p>
         <!--navbar-->
         <nav class="navbar bg-transparent">
           <div class="container-fluid">
@@ -133,77 +139,94 @@
                     </ul>
                   {% endif %}
                 </ul>
-                <form class="d-flex mt-3" role="search">
-                  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                  <button class="btn btn-outline-primary" type="submit">Search</button>
-                </form>
+                  <div class="container-fluid">
+                    <form class="d-flex" role="search">
+                      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                      <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                  </div>              
               </div>
             </div>
           </div>
         </nav>
         {% endblock %}
 
-          <!--Saludos-->
-      {% block saludos %}
-      <div class="col-12">
-        <div class="alert alert-primary fade show" role="alert">
-          <!-- <strong>Te saluda [RENTAPP]!</strong> You should check in on some of those fields below. -->
-          <div class="row row-cols-12 row-cols-sm-12 ">
-            <div id="testimonios-carrusel" class="carousel carousel-dark slide " data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div class="container">
-                            <b><u>Fácil y Seguro</u></b>
-                            <div class="testimonio-info">
-                                <p>Usar nuestro sitio web para rentar es fácil y seguro.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="container">
-                            <b><u>Compra con Confianza</u></b>
-                            <div class="testimonio-info">
-                                <p>Comprar una propiedad nunca ha sido tan sencillo.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="container">
-                            <b><u>Vende Rápido y Fácil</u></b>
-                            <div class="testimonio-info">
-                                <p>Vender tu propiedad es rápido y fácil con nuestro sitio web.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#testimonios-carrusel" 
-                  data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#testimonios-carrusel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Siguiente</span>
-                </button>
-            </div>
-        </div>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <!-- <div class="alert alert-warning alert-dismissible fade show row col-12 align-items-stretch g-2" role="alert">
-          <p>[RENTAPP] renta, compra y venta.</p>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div> -->
-        </div>
-      {% endblock %}
+        <!--Saludos-->
+        {% if not user.is_authenticated %}
 
+        {% block saludos %}
+        <div class="col-12">
+          <div class="alert alert-primary fade show" role="alert">
+            <!-- <strong>Te saluda [RENTAPP]!</strong> You should check in on some of those fields below. -->
+            <div class="row row-cols-12 row-cols-sm-12 ">
+              <div id="testimonios-carrusel" class="carousel carousel-dark slide " data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                      <div class="carousel-item active">
+                          <div class="container">
+                              <b><u>Fácil y Seguro</u></b>
+                              <div class="testimonio-info">
+                                  <p>Usar nuestro sitio web para rentar es fácil y seguro.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="carousel-item">
+                          <div class="container">
+                              <b><u>Compra con Confianza</u></b>
+                              <div class="testimonio-info">
+                                  <p>Comprar una propiedad nunca ha sido tan sencillo.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="carousel-item">
+                          <div class="container">
+                              <b><u>Vende Rápido y Fácil</u></b>
+                              <div class="testimonio-info">
+                                  <p>Vender tu propiedad es rápido y fácil con nuestro sitio web.</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <button class="carousel-control-prev" type="button" data-bs-target="#testimonios-carrusel" 
+                    data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Anterior</span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#testimonios-carrusel" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Siguiente</span>
+                  </button>
+              </div>
+          </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          <!-- <div class="alert alert-warning alert-dismissible fade show row col-12 align-items-stretch g-2" role="alert">
+            <p>[RENTAPP] renta, compra y venta.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div> -->
+        </div>
+        {% endblock %}
+        {% endif %}
         <!--block content-->
         <div class="col-sm-12">
           {% block content %}
           <!-- block for the content -->
           {% endblock %}
         </div>
+        <!--block content-->
+        <div class="col-sm-12">
+          {% block pagination %}
+          <!-- block for the pagination -->
+          {% endblock %}
+        </div>
+
       {% block footer %}
-      <footer>WinderFree-Apps</footer>
+    <!--block footer-->
+    <div class="col-sm-12">
+      <footer>
+        <p>Author: Winfreak<br>
+        <a href="mailto:juans.casado@gmail.com">juans.casado@gmail.com</a></p>
+      </footer>      
+    </div>
       {% endblock %}
     </div>
   </div>
