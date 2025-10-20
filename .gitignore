@@ -1,43 +1,31 @@
 # Python
 *.pyc
-*.pyo
-*.pyd
 __pycache__/
-*.env
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
 
 # Django
 *.log
-*.pot
-*.py[cod]
-*.sqlite3
 db.sqlite3
+db.sqlite3-journal
+/staticfiles/
 /media/
-/static/
-*.pyc
-*.pyo
-*.pyd
-__pycache__/
-*.env
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-envforrequierements.back/
-env.bak/
-venv.bak/
-
-# VS Code
+# IDEs
 .vscode/
-
-# PyCharm
 .idea/
+*.swp
+*.swo
 
-# macOS
+# OS
 .DS_Store
-
-# Windows
 Thumbs.db
-ehthumbs.db
+
+# Secrets
+.env
+*.env

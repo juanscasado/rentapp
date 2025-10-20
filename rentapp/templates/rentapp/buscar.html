@@ -1,15 +1,54 @@
 {% extends "base.html" %}
-{% block title %} <title>Rentapp - Buscar</title> {% endblock %}
-
+{% block title %}<title>Buscar</title>{% endblock %}
 {% block content %}
+<div class="container py-3">
+  <form class="mb-3" method="get" action="{% url 'rentapp:buscar' %}">
+    <div class="input-group">
+      <input type="search" class="form-control" name="q" placeholder="Provincia, municipio, dirección, referencia, usuario..." value="{{ buscar|default:'' }}">
+      <button class="btn btn-primary" type="submit">Buscar</button>
+    </div>
+  </form>
 
-<h1>Hola</h1>
+  {% if mensaje %}<p class="text-muted">{{ mensaje }}</p>{% endif %}
 
-<h3>{{ buscar }} </h3>
-<form action="{% url 'rentapp:buscar' %}" method="post" >
-  {% csrf_token %}
-  <input name="search" class="form" type="search" placeholder="Buscar" aria-label="Search" type="submit">
-  <button name="search"	 class="btn btn-outline-primary" type="submit">Buscar</button>
-</form>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for local in locals %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ local.direccion }}</h5>
+            <p class="card-text mb-2">
+              <strong>Provincia:</strong> {{ local.provincia }}<br>
+              <strong>Municipio:</strong> {{ local.municipio }}<br>
+              <strong>Sector:</strong> {{ local.sector }}<br>
+              <strong>Tipo:</strong> {{ local.prop }}<br>
+              <strong>Propietario:</strong> {{ local.user.username }}
+            </p>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'rentapp:detail' local.id %}">Ver</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12"><div class="alert alert-info">No se encontraron resultados.</div></div>
+    {% endfor %}
+  </div>
 
+  {% if locals.paginator.num_pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination">
+      {% if locals.has_previous %}
+        <li class="page-item"><a class="page-link" href="?q={{ buscar }}&page={{ locals.previous_page_number }}">Anterior</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Página {{ locals.number }} de {{ locals.paginator.num_pages }}</span></li>
+      {% if locals.has_next %}
+        <li class="page-item"><a class="page-link" href="?q={{ buscar }}&page={{ locals.next_page_number }}">Siguiente</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
 {% endblock %}

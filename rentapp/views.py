@@ -1,39 +1,25 @@
 import os
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-
-from django.core.paginator import Paginator
-from django.shortcuts import  render
-# from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.http import  HttpResponse, HttpResponseRedirect
-from .forms import *
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-# from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt  # <-- Agrega esta línea
 
-# filepath: /c:/Users/WinFree/Desktop/repo/rentapp/rentapp/views.py
-from django.shortcuts import render, redirect
-from .forms import LocalForm
-
-from django.contrib.auth import login, authenticate
-
-from .forms import UserForm
+from .forms import *
+from .models import Local, Foto, User
 
 def register(request):
+    # Registro básico con el User personalizado
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-            # Authenticate and login the user
-            new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
-            login(request, new_user)
-            return redirect(f'/dashboard/{user.id}')  # Redirect to a success page.
+            form.save()
+            return redirect('login')
     else:
-        form = UserForm()
+        form = UserCreationForm()
     return render(request, 'registration/registration_form.html', {'form': form})
 
 def logout_user(request):
@@ -134,13 +120,37 @@ def insertar_local(request):
         form = LocalForm()
     return render(request, 'rentapp/insertar_local.html', {'form': form})
 
-# Reparar
 def buscar(request):
-    locals = list(Local.objects.all().order_by('-id'))
+    # Acepta ?q= o ?search=
+    term = (request.GET.get('q') or request.GET.get('search') or '').strip()
+    qs = Local.objects.all()
+
+    if term:
+        tokens = [t for t in term.split() if t]
+        for t in tokens:
+            qs = qs.filter(
+                Q(direccion__icontains=t) |
+                Q(provincia__icontains=t) |
+                Q(municipio__icontains=t) |
+                Q(sector__icontains=t) |
+                Q(referencia__icontains=t) |
+                Q(prop__icontains=t) |
+                Q(user__username__icontains=t)
+            )
+
+    qs = qs.order_by('-id').distinct()
+    total = qs.count()
+
+    # Paginación
+    p = Paginator(qs, 12)
+    page = request.GET.get('page')
+    locals_page = p.get_page(page)
+
     context = {
-        "grap": request.GET.get('search'),
-        "locals": locals,
-        "buscar": 'Buscando',
+        "locals": locals_page,
+        "buscar": term,
+        "mensaje": f"Se encontraron {total} resultado(s) para '{term}'" if term else "Mostrando todas las propiedades",
+        "count": total,
     }
     return render(request, "rentapp/buscar.html", context)
 
@@ -229,4 +239,32 @@ def prueba(request):
     fotos_local = list(Foto.objects.all().values())
 
     return  HttpResponse(f"local: {local}----Fotos:{fotos_local}" )
+
+@login_required
+def eliminar_foto(request, foto_id):
+    """
+    Elimina una foto por AJAX (POST). Verifica propiedad y borra el archivo físico.
+    Respuestas:
+      200: {"success": True}
+      403: No autorizado
+      405: Método no permitido
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+    foto = get_object_or_404(Foto, id=foto_id)
+
+    # Solo el dueño del local puede eliminar
+    if foto.local.user != request.user:
+        return JsonResponse({'success': False, 'message': 'No autorizado'}, status=403)
+
+    # Borra archivo en disco si existe
+    try:
+        if foto.image_local and os.path.isfile(foto.image_local.path):
+            os.remove(foto.image_local.path)
+    except Exception:
+        pass
+
+    foto.delete()
+    return JsonResponse({'success': True})
 
