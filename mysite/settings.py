@@ -1,13 +1,10 @@
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', default='sajfhjdhfjdhghteoeo')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = []
@@ -85,8 +82,10 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- Siempre definido
+
 if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Solo en producción usar WhiteNoise con compresión
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
@@ -98,14 +97,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Usuario personalizado
 AUTH_USER_MODEL = 'rentapp.User'
 
-# Redirecciones después de login/logout
+# Redirecciones
 LOGIN_REDIRECT_URL = 'rentapp:index'
 LOGOUT_REDIRECT_URL = 'rentapp:index'
 
-# Email en desarrollo (envía correos a la consola)
+# Email (desarrollo)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Configuración de django-registration-redux
+# django-registration-redux
 ACCOUNT_ACTIVATION_DAYS = 7
 REGISTRATION_AUTO_LOGIN = True
 
