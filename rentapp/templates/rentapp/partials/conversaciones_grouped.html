@@ -1,0 +1,57 @@
+```django-html
+// filepath: c:\Users\WinFree\Desktop\repo\rentapp\rentapp\templates\rentapp\partials\conversaciones_grouped.html
+{% if grupos %}
+  {% for grupo in grupos %}
+    <div class="mb-4">
+      <div class="d-flex align-items-center mb-2">
+        <h5 class="mb-0">
+          <i class="bi bi-house-door"></i>
+          {% if grupo.local %}
+            {{ grupo.label }}
+            <a class="ms-2 small" href="{% url 'rentapp:detail' grupo.local.id %}">ver local</a>
+          {% else %}
+            Sin local
+          {% endif %}
+        </h5>
+        <span class="badge bg-secondary ms-2">{{ grupo.count }}</span>
+      </div>
+
+      <div class="list-group">
+        {% for item in grupo.items %}
+          <a href="{% url 'rentapp:chat' item.conversacion.id %}"
+             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if item.no_leidos > 0 %}list-group-item-primary{% endif %}">
+            <div class="me-3">
+              <div class="fw-semibold">
+                <i class="bi bi-person-circle"></i> {{ item.otro_usuario.username }}
+                {% if item.no_leidos > 0 %}
+                  <span class="badge bg-danger rounded-pill ms-2 pulse">{{ item.no_leidos }}</span>
+                {% endif %}
+              </div>
+              {% if item.ultimo_mensaje %}
+                <div class="text-truncate small">
+                  {% if item.ultimo_mensaje.remitente == request.user %}<strong>Tú:</strong> {% endif %}
+                  {{ item.ultimo_mensaje.contenido|truncatewords:18 }}
+                </div>
+              {% else %}
+                <div class="text-muted small">No hay mensajes aún</div>
+              {% endif %}
+            </div>
+            <small class="text-muted">
+              {% if item.ultimo_mensaje %}{{ item.ultimo_mensaje.created_at|date:"d/m/Y H:i" }}{% endif %}
+            </small>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No tienes conversaciones aún.
+  </div>
+{% endif %}
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+.pulse { animation: pulse 2s infinite; }
+</style>
+```

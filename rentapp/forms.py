@@ -1,5 +1,5 @@
 from django import forms
-from .models import *
+from .models import User, Local, Foto, Mensaje
 
 import re
 
@@ -59,3 +59,19 @@ class UserForm(forms.ModelForm):
             raise forms.ValidationError("Las contraseñas no coinciden.")
 
         return cleaned_data
+
+class MensajeForm(forms.ModelForm):
+    class Meta:
+        model = Mensaje
+        fields = ['contenido']
+        widgets = {
+            'contenido': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Escribe tu mensaje aquí...',
+                'required': True
+            })
+        }
+        labels = {
+            'contenido': ''
+        }

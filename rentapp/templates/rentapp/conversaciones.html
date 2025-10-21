@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}<title>Mis Conversaciones</title>{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-10 col-lg-8 mx-auto">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Mis Conversaciones</h2>
+        <div>
+          <span id="last-update" class="text-muted me-3">
+            <small><i class="bi bi-clock"></i> Actualizado hace <span id="time-ago">0s</span></small>
+          </span>
+          <a href="{% url 'rentapp:buscar' %}" class="btn btn-outline-secondary">Buscar</a>
+        </div>
+      </div>
+
+      <div id="conversaciones-container">
+        {% include 'rentapp/partials/conversaciones_grouped.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function(){
+  let lastUpdate = Date.now();
+  const updateInterval = 3000;
+
+  function actualizarTiempo() {
+    const s = Math.floor((Date.now() - lastUpdate) / 1000);
+    $('#time-ago').text(s < 60 ? s + 's' : Math.floor(s/60) + 'm');
+  }
+  setInterval(actualizarTiempo, 1000);
+
+  function cargarConversaciones() {
+    $.get("{% url 'rentapp:api_conversaciones' %}", function(resp){
+      if (resp.html) {
+        const $container = $('#conversaciones-container');
+        const scrollPos = $(window).scrollTop();
+        $container.html(resp.html);
+        $(window).scrollTop(scrollPos);
+        lastUpdate = Date.now();
+        actualizarTiempo();
+        $container.addClass('updated');
+        setTimeout(()=> $container.removeClass('updated'), 250);
+      }
+    });
+  }
+  setInterval(cargarConversaciones, updateInterval);
+});
+</script>
+
+<style>
+#conversaciones-container { transition: opacity .25s ease; }
+#conversaciones-container.updated { opacity: .85; }
+</style>
+{% endblock %}

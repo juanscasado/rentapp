@@ -1,161 +1,53 @@
-{% extends "base.html" %} 
-{% block title %}<title>Details</title>{%endblock %} 
-{% block customcards %}{% endblock %} 
+{% extends "base.html" %}
+{% block title %}<title>{{ local_location.direccion }}</title>{% endblock %}
+
 {% block content %}
-<style>
-  #lienzoMapa {
-    width: 90%;
-  }
-
-  .fotos {
-    height: auto;
-    width: auto;
-    margin: 5px;
-    padding: 4px;
-    display: inline-flexbox;
-    border: 4px solid #e4ede8;
-    border-radius: 12px;
-  }
-
-  .fotos:hover {
-    height: auto;
-    width: auto;
-    padding: 4px;
-    display: inline-flexbox;
-    border: 4px solid #3dbb76;
-    border-radius: 12px;
-  }
-
-  .imagen_local {
-    cursor: grab;
-    margin: 0px;
-    width: 8em;
-    height: 6em;
-    display: inline-block;
-    transition: 600ms;
-  }
-
-  .imagen_local:hover {
-    cursor: grab;
-    margin: 0px;
-    width: 12em;
-    height: 11em;
-    display: inline-block;
-  }
-</style>
-
-<div class="container">
+<div class="container mt-4">
   <div class="row">
-    <div class="col-12 col-sm-12">
-      <legend><b><u>En {{ local_location.prop|title }}</u></b></legend>
-      <p class="card-text">Por: <i>{{ local_location.user|title }}</i> </p>
-      <b id="location" class="card-text">{{ local_location.direccion|title }}.</b>
+    <div class="col-md-8">
+      <h2>{{ local_location.direccion }}</h2>
+      
+      <!-- Información del local -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <p><strong>Tipo:</strong> {{ local_location.prop }}</p>
+          <p><strong>Provincia:</strong> {{ local_location.provincia }}</p>
+          <p><strong>Municipio:</strong> {{ local_location.municipio }}</p>
+          <p><strong>Sector:</strong> {{ local_location.sector }}</p>
+          <p><strong>Referencia:</strong> {{ local_location.referencia }}</p>
+          <p><strong>Propietario:</strong> {{ local_location.user.username }}</p>
+        </div>
+      </div>
+
+      <!-- Botón de contactar (solo si NO es el dueño) -->
+      {% if request.user.is_authenticated and request.user != local_location.user %}
+        <div class="mb-3">
+          <a href="{% url 'rentapp:iniciar_conversacion' local_location.id %}" class="btn btn-success btn-lg w-100">
+            <i class="bi bi-chat-dots"></i> Contactar al propietario
+          </a>
+        </div>
+      {% elif request.user == local_location.user %}
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i> Esta es tu propiedad
+        </div>
+      {% else %}
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle"></i> 
+          <a href="{% url 'auth_login' %}">Inicia sesión</a> para contactar al propietario
+        </div>
+      {% endif %}
+
+      <!-- Fotos -->
+      <div class="row g-3">
+        {% for foto in fotos %}
+          <div class="col-6 col-md-4">
+            <img src="{{ foto.image_local.url }}" class="img-fluid rounded" alt="{{ foto.name_foto_local }}">
+          </div>
+        {% empty %}
+          <p class="text-muted">No hay fotos disponibles</p>
+        {% endfor %}
+      </div>
     </div>
-    <div hidden>
-      <p id="latitud">{{ local_location.latitud }}</p>
-      <p id="longitud">{{ local_location.longitud }}</p>
-    </div>
-    {% if fotos %}
-    <div class="fotos">
-      {% for foto in fotos %}
-      <a target="_blank" href="{{ foto.image_local.url }}"
-        ><img
-          class="imagen_local"
-          src="{{ foto.image_local.url }}"
-          alt="image_renta"
-      /></a>
-      {% endfor %}
-    </div>
-    {% endif %}
-    <!-- Contacto -->
-    <div style="font-size: 42px">
-      <!-- <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-        ><i class="bi bi-envelope" title="Contactar con Rentador."></i
-      ></a> -->
-      <a
-        href="mailto:{{local_location.user.email}}"
-        target="_blank"
-        rel="noopener noreferrer">
-        <i 
-          class="bi bi-envelope-check-fill"
-          title="Enviar e-mail al rendatario."></i></a>
-
-      <a 
-        target="_parent" 
-        rel="noopener noreferrer">
-        <i 
-          class="bi bi-whatsapp" 
-          title="Contactar con Whatapp.">
-        </i></a>
-    </div>
-    <div>
-
-      <p class="card-text">Teléfono: <b>{{ local_location.user.phone_number }}</b></p>
-
-    </div>
-    <!-- <Mapa local -->
-    <!-- {% if location %}
-    <h1>location map:</h1>
-    <div id="lienzoMapa"></div>
-    {% endif %} {% if not location %}
-    <p>Not a Map</p>
-    {% endif %} -->
-    <!-- <a
-      href="mailto:juans.casado@gmail.com"
-      target="_blank"
-      rel="noopener noreferrer">
-      <i 
-        class="bi bi-envelope-check-fill">
-      </i>
-    </a> -->
-    <h3>¿Donde? <code>{{ local_location.referencia|title }}</code></h3>
-
-    <script>
-      var latitud = document.getElementById("latitud");
-      var longitud = "-" + document.getElementById("longitud");
-      var map;
-      function initialize() {
-        const svgMarker = {
-          //path: "M -1,0 A 1,1 0 0 0 -3,0 1,1 0 0 0 -1,0M 1,0 A 1,1 0 0 0 3,0 1,1 0 0 0 1,0M -3,3 Q 0,5 3,3",
-          path: "M-1.547 12l6.563-6.609-1.406-1.406-5.156 5.203-2.063-2.109-1.406 1.406zM0 0q2.906 0 4.945 2.039t2.039 4.945q0 1.453-0.727 3.328t-1.758 3.516-2.039 3.070-1.711 2.273l-0.75 0.797q-0.281-0.328-0.75-0.867t-1.688-2.156-2.133-3.141-1.664-3.445-0.75-3.375q0-2.906 2.039-4.945t4.945-2.039z",
-          fillColor: "#3dbb76",
-          fillOpacity: 1,
-          strokeWeight: 0,
-          rotation: 45,
-          scale: 2,
-          anchor: new google.maps.Point(0, 20),
-        };
-
-        //var latitud = document.getElementById("latitud")
-        var myLatlng = new google.maps.LatLng(latitud, longitud);
-        var mapOptions = {
-          zoom: 18,
-          center: new google.maps.LatLng(latitud, longitud),
-        };
-
-        var map = new google.maps.Map(
-          document.getElementById("lienzoMapa"),
-          mapOptions
-        );
-
-        var marker = new google.maps.Marker({
-          position: myLatlng,
-          icon: svgMarker,
-          title: document.getElementById("location").innerHTML,
-        });
-
-        // To add the marker to the map, call setMap();
-        marker.setMap(map);
-      }
-      google.maps.event.addDomListener(window, "load", initialize);
-    </script>
-    <script>
-      var latitud = document.getElementById("latitud").innerHTML;
-      var longitud = document.getElementById("longitud").innerHTML;
-    </script>
   </div>
-  {% endblock %} {% block pagination %}{% endblock %}
 </div>
+{% endblock %}

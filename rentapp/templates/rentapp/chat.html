@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}<title>Chat con {{ otro_usuario.username }}</title>{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <i class="bi bi-chat-dots"></i> Chat con <strong>{{ otro_usuario.username }}</strong>
+            {% if conversacion.local %}
+              <br><small>Sobre: {{ conversacion.local.direccion|truncatewords:10 }}</small>
+            {% endif %}
+          </div>
+          <div>
+            <span id="connection-status" class="badge bg-success me-2">
+              <i class="bi bi-wifi"></i> Conectado
+            </span>
+            <a href="{% url 'rentapp:conversaciones' %}" class="btn btn-sm btn-light">
+              <i class="bi bi-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body p-3" id="chat-box" style="height:450px; overflow-y:auto; background-color:#f8f9fa;">
+          {% for mensaje in mensajes %}
+            <div class="mb-3 mensaje-item {% if mensaje.remitente == request.user %}text-end{% endif %}" data-msg-id="{{ mensaje.id }}">
+              <div class="d-inline-block p-2 rounded-3 {% if mensaje.remitente == request.user %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width:75%;">
+                <div class="mb-1">
+                  <small class="{% if mensaje.remitente == request.user %}text-white-50{% else %}text-muted{% endif %}">
+                    <strong>{{ mensaje.remitente.username }}</strong>
+                  </small>
+                </div>
+                <div>{{ mensaje.contenido }}</div>
+                <div class="mt-1">
+                  <small class="{% if mensaje.remitente == request.user %}text-white-50{% else %}text-muted{% endif %}">
+                    {{ mensaje.created_at|date:"d/m/Y H:i" }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center text-muted mt-5" id="empty-message">
+              <i class="bi bi-chat-left-text" style="font-size:3rem;"></i>
+              <p>No hay mensajes aún. ¡Inicia la conversación!</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="card-footer bg-light">
+          <form id="mensaje-form">
+            {% csrf_token %}
+            <div class="input-group">
+              <textarea 
+                name="contenido" 
+                id="id_contenido" 
+                class="form-control" 
+                rows="2" 
+                placeholder="Escribe tu mensaje aquí..." 
+                maxlength="1000"
+                required></textarea>
+              <button type="submit" class="btn btn-primary" id="btn-enviar">
+                <i class="bi bi-send"></i> Enviar
+              </button>
+            </div>
+            <small class="text-muted" id="char-count">0/1000 caracteres</small>
+          </form>
+        </div>
+      </div>
+
+      {% if conversacion.local %}
+        <div class="mt-3 text-center">
+          <a href="{% url 'rentapp:detail' conversacion.local.id %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-house"></i> Ver propiedad
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+  let ultimoMensajeId = {{ mensajes.last.id|default:0 }};
+  let pollingInterval = 1500;
+  let failedAttempts = 0;
+  const maxFailedAttempts = 3;
+  const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+  function scrollToBottom(smooth = true) {
+    const chatBox = $('#chat-box')[0];
+    if (smooth) {
+      chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+      });
+    } else {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  }
+  
+  // Scroll inicial
+  setTimeout(() => scrollToBottom(false), 100);
+
+  // Contador de caracteres
+  $('#id_contenido').on('input', function(){
+    const count = $(this).val().length;
+    $('#char-count').text(`${count}/1000 caracteres`);
+  });
+
+  // Enviar mensaje por AJAX (prevenir submit tradicional)
+  $('#mensaje-form').on('submit', function(e){
+    e.preventDefault(); // CRUCIAL: prevenir recarga de página
+    e.stopPropagation();
+    
+    const contenido = $('#id_contenido').val().trim();
+    
+    if (!contenido) {
+      $('#id_contenido').focus();
+      return false;
+    }
+
+    // Deshabilitar botón mientras se envía
+    $('#btn-enviar').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
+    $('#id_contenido').prop('disabled', true);
+
+    $.ajax({
+      url: window.location.href,
+      type: 'POST',
+      data: {
+        contenido: contenido,
+        csrfmiddlewaretoken: csrfToken
+      },
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+      success: function(resp){
+        if (resp.success){
+          // Remover mensaje vacío
+          $('#empty-message').remove();
+          
+          // Agregar mensaje al chat
+          const msgHtml = `
+            <div class="mb-3 mensaje-item text-end" data-msg-id="${resp.mensaje.id}">
+              <div class="d-inline-block p-2 rounded-3 bg-primary text-white" style="max-width:75%;">
+                <div class="mb-1">
+                  <small class="text-white-50"><strong>${resp.mensaje.remitente}</strong></small>
+                </div>
+                <div>${resp.mensaje.contenido}</div>
+                <div class="mt-1">
+                  <small class="text-white-50">${resp.mensaje.created_at}</small>
+                </div>
+              </div>
+            </div>`;
+          
+          $('#chat-box').append(msgHtml);
+          $('#id_contenido').val('');
+          $('#char-count').text('0/1000 caracteres');
+          ultimoMensajeId = resp.mensaje.id;
+          scrollToBottom();
+        } else {
+          alert('Error al enviar mensaje');
+        }
+      },
+      error: function(xhr, status, error){
+        alert('Error al enviar mensaje. Por favor intenta de nuevo.');
+        console.error('Error:', xhr.responseText);
+      },
+      complete: function(){
+        $('#btn-enviar').prop('disabled', false).html('<i class="bi bi-send"></i> Enviar');
+        $('#id_contenido').prop('disabled', false).focus();
+      }
+    });
+    
+    return false; // Prevenir submit
+  });
+
+  // Polling para nuevos mensajes
+  function pollNuevosMensajes() {
+    $.ajax({
+      url: "{% url 'rentapp:obtener_mensajes_nuevos' conversacion.id %}",
+      type: 'GET',
+      data: {ultimo_id: ultimoMensajeId},
+      timeout: 5000,
+      success: function(resp){
+        failedAttempts = 0;
+        $('#connection-status')
+          .removeClass('bg-warning bg-danger')
+          .addClass('bg-success')
+          .html('<i class="bi bi-wifi"></i> Conectado');
+
+        if (resp.mensajes && resp.mensajes.length > 0) {
+          $('#empty-message').remove();
+          
+          resp.mensajes.forEach(function(m){
+            // Evitar duplicados
+            if ($(`[data-msg-id="${m.id}"]`).length > 0) {
+              return;
+            }
+
+            const alineacion = m.es_mio ? 'text-end' : '';
+            const estilo = m.es_mio ? 'bg-primary text-white' : 'bg-white border';
+            const colorTexto = m.es_mio ? 'text-white-50' : 'text-muted';
+            
+            const msgHtml = `
+              <div class="mb-3 mensaje-item ${alineacion}" data-msg-id="${m.id}">
+                <div class="d-inline-block p-2 rounded-3 ${estilo}" style="max-width:75%;">
+                  <div class="mb-1">
+                    <small class="${colorTexto}"><strong>${m.remitente}</strong></small>
+                  </div>
+                  <div>${m.contenido}</div>
+                  <div class="mt-1">
+                    <small class="${colorTexto}">${m.created_at}</small>
+                  </div>
+                </div>
+              </div>`;
+            
+            $('#chat-box').append(msgHtml);
+            ultimoMensajeId = m.id;
+          });
+          
+          scrollToBottom();
+        }
+      },
+      error: function(xhr, status, error){
+        failedAttempts++;
+        
+        if (failedAttempts >= maxFailedAttempts) {
+          $('#connection-status')
+            .removeClass('bg-success bg-warning')
+            .addClass('bg-danger')
+            .html('<i class="bi bi-wifi-off"></i> Sin conexión');
+        } else {
+          $('#connection-status')
+            .removeClass('bg-success bg-danger')
+            .addClass('bg-warning')
+            .html('<i class="bi bi-wifi-1"></i> Reconectando...');
+        }
+      }
+    });
+  }
+
+  // Iniciar polling
+  const pollingTimer = setInterval(pollNuevosMensajes, pollingInterval);
+
+  // Auto-focus
+  $('#id_contenido').focus();
+
+  // Enter para enviar (Shift+Enter para nueva línea)
+  $('#id_contenido').on('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      $('#mensaje-form').trigger('submit');
+    }
+  });
+
+  // Limpiar interval al salir
+  $(window).on('beforeunload', function(){
+    clearInterval(pollingTimer);
+  });
+});
+</script>
+{% endblock %}

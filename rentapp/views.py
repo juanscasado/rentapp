@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,10 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, authenticate, login
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt  # <-- Agrega esta línea
+from django.views.decorators.csrf import csrf_exempt  # <-- Agregar esta línea
+from django.template.loader import render_to_string
 
 from .forms import *
-from .models import Local, Foto, User
+from .models import Local, Foto, User, Conversacion, Mensaje
 
 def register(request):
     # Registro básico con el User personalizado
@@ -267,4 +269,205 @@ def eliminar_foto(request, foto_id):
 
     foto.delete()
     return JsonResponse({'success': True})
+
+# ==================== MENSAJERÍA ====================
+
+def _build_conversaciones_grouped(user):
+    qs = (Conversacion.objects
+          .filter(Q(participante1=user) | Q(participante2=user))
+          .select_related('local', 'participante1', 'participante2')
+          .prefetch_related('mensajes'))
+
+    # conv_info por conversación
+    conv_info = []
+    for conv in qs:
+        ultimo = conv.mensajes.last()
+        conv_info.append({
+            'conversacion': conv,
+            'otro_usuario': conv.get_otro_participante(user),
+            'ultimo_mensaje': ultimo,
+            'no_leidos': conv.contar_no_leidos(user),
+            'local': conv.local,  # para agrupar
+        })
+
+    # Agrupar por Local (None -> "Sin local")
+    grupos = defaultdict(list)
+    for item in conv_info:
+        key = item['local'].id if item['local'] else 'none'
+        grupos[key].append(item)
+
+    # Preparar estructura ordenada por nombre/dirección del Local
+    grouped_list = []
+    # Orden: locales con nombre/dirección ascendentes, luego "Sin local" al final
+    def local_label(loc):
+        if not loc:
+            return "Sin local"
+        # Mostrar algo útil del local
+        return f"{loc.direccion} — {loc.municipio}, {loc.provincia}".strip(' — ,')
+
+    # Construir lista
+    keys_sorted = sorted(grupos.keys(), key=lambda k: (k == 'none', local_label(grupos[k][0]['local']).lower() if k != 'none' else 'zzz'))
+    for k in keys_sorted:
+        loc = grupos[k][0]['local'] if k != 'none' else None
+        grouped_list.append({
+            'local': loc,
+            'label': local_label(loc),
+            'items': grupos[k],
+            'count': len(grupos[k]),
+        })
+
+    total_no_leidos = sum(i['no_leidos'] for i in conv_info)
+    return grouped_list, total_no_leidos
+
+@login_required
+def conversaciones_list(request):
+    grouped, total_no_leidos = _build_conversaciones_grouped(request.user)
+    context = {
+        'grupos': grouped,
+        'total_no_leidos': total_no_leidos,
+    }
+    return render(request, 'rentapp/conversaciones.html', context)
+
+@login_required
+def chat_view(request, conversacion_id):
+    """Vista de chat individual"""
+    conversacion = get_object_or_404(
+        Conversacion,
+        id=conversacion_id
+    )
+    
+    # Verificar que el usuario es parte de la conversación
+    if request.user not in [conversacion.participante1, conversacion.participante2]:
+        return HttpResponse('No autorizado', status=403)
+    
+    # Marcar mensajes como leídos
+    Mensaje.objects.filter(
+        conversacion=conversacion,
+        leido=False
+    ).exclude(remitente=request.user).update(leido=True)
+    
+    # Obtener mensajes
+    mensajes = conversacion.mensajes.all()
+    otro_usuario = conversacion.get_otro_participante(request.user)
+    
+    # Procesar envío de mensaje
+    if request.method == 'POST':
+        form = MensajeForm(request.POST)
+        if form.is_valid():
+            mensaje = form.save(commit=False)
+            mensaje.conversacion = conversacion
+            mensaje.remitente = request.user
+            mensaje.save()
+            
+            # Respuesta AJAX
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'mensaje': {
+                        'id': mensaje.id,
+                        'contenido': mensaje.contenido,
+                        'remitente': mensaje.remitente.username,
+                        'created_at': mensaje.created_at.strftime('%H:%M')
+                    }
+                })
+            return redirect('rentapp:chat', conversacion_id=conversacion.id)
+    else:
+        form = MensajeForm()
+    
+    context = {
+        'conversacion': conversacion,
+        'mensajes': mensajes,
+        'otro_usuario': otro_usuario,
+        'form': form
+    }
+    return render(request, 'rentapp/chat.html', context)
+
+@login_required
+def iniciar_conversacion(request, local_id):
+    """Inicia o recupera una conversación con el dueño de un local (una por Local)"""
+    local = get_object_or_404(Local, id=local_id)
+
+    if local.user == request.user:
+        return redirect('rentapp:detail', local_id=local.id)
+
+    # ordenar participantes para evitar duplicados
+    users = sorted([request.user, local.user], key=lambda u: u.username)
+    conversacion, created = Conversacion.objects.get_or_create(
+        participante1=users[0],
+        participante2=users[1],
+        local=local  # clave: conversación por Local
+    )
+    return redirect('rentapp:chat', conversacion_id=conversacion.id)
+
+@login_required
+def obtener_mensajes_nuevos(request, conversacion_id):
+    """API para polling de mensajes nuevos (AJAX) - Optimizado"""
+    conversacion = get_object_or_404(Conversacion, id=conversacion_id)
+    
+    if request.user not in [conversacion.participante1, conversacion.participante2]:
+        return JsonResponse({'error': 'No autorizado'}, status=403)
+    
+    ultimo_id = int(request.GET.get('ultimo_id', 0))
+    
+    # Solo traer campos necesarios para mejorar performance
+    mensajes_nuevos = Mensaje.objects.filter(
+        conversacion=conversacion,
+        id__gt=ultimo_id
+    ).select_related('remitente').values(
+        'id', 
+        'remitente__username', 
+        'contenido', 
+        'created_at', 
+        'remitente_id'
+    )
+    
+    mensajes_data = [{
+        'id': m['id'],
+        'remitente': m['remitente__username'],
+        'contenido': m['contenido'],
+        'created_at': m['created_at'].strftime('%d/%m/%Y %H:%M'),
+        'es_mio': m['remitente_id'] == request.user.id
+    } for m in mensajes_nuevos]
+    
+    # Marcar como leídos solo los mensajes del otro usuario
+    if mensajes_data:
+        Mensaje.objects.filter(
+            conversacion=conversacion,
+            id__gt=ultimo_id,
+            leido=False
+        ).exclude(remitente=request.user).update(leido=True)
+    
+    return JsonResponse({
+        'mensajes': mensajes_data,
+        'timestamp': conversacion.updated_at.isoformat()
+    })
+
+@login_required
+def contar_mensajes_no_leidos(request):
+    """API para contar mensajes no leídos del usuario actual"""
+    conversaciones = Conversacion.objects.filter(
+        Q(participante1=request.user) | Q(participante2=request.user)
+    )
+    
+    total_no_leidos = 0
+    for conv in conversaciones:
+        total_no_leidos += conv.contar_no_leidos(request.user)
+    
+    return JsonResponse({
+        'total_no_leidos': total_no_leidos
+    })
+
+@login_required
+def api_conversaciones(request):
+    """API para actualizar la lista de conversaciones agrupadas por Local"""
+    grouped, total_no_leidos = _build_conversaciones_grouped(request.user)
+    html = render_to_string('rentapp/partials/conversaciones_grouped.html', {
+        'grupos': grouped,
+        'request': request
+    })
+    return JsonResponse({
+        'html': html,
+        'total': sum(g['count'] for g in grouped),
+        'total_no_leidos': total_no_leidos
+    })
 

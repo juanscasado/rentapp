@@ -1,0 +1,55 @@
+{% if conversaciones %}
+  <div class="list-group">
+    {% for item in conversaciones %}
+      <a href="{% url 'rentapp:chat' item.conversacion.id %}" 
+         class="list-group-item list-group-item-action {% if item.no_leidos > 0 %}list-group-item-primary{% endif %}"
+         data-conv-id="{{ item.conversacion.id }}">
+        <div class="d-flex w-100 justify-content-between align-items-center">
+          <h5 class="mb-1">
+            <i class="bi bi-person-circle"></i> {{ item.otro_usuario.username }}
+            {% if item.no_leidos > 0 %}
+              <span class="badge bg-danger rounded-pill ms-2 pulse">{{ item.no_leidos }}</span>
+            {% endif %}
+          </h5>
+          <small class="text-muted">
+            {% if item.ultimo_mensaje %}
+              {{ item.ultimo_mensaje.created_at|date:"d/m/Y H:i" }}
+            {% endif %}
+          </small>
+        </div>
+        {% if item.ultimo_mensaje %}
+          <p class="mb-1 text-truncate">
+            <small>
+              {% if item.ultimo_mensaje.remitente == request.user %}
+                <strong>Tú:</strong>
+              {% endif %}
+              {{ item.ultimo_mensaje.contenido|truncatewords:15 }}
+            </small>
+          </p>
+        {% else %}
+          <p class="mb-1 text-muted"><small>No hay mensajes aún</small></p>
+        {% endif %}
+        {% if item.conversacion.local %}
+          <small class="text-muted">
+            <i class="bi bi-house"></i> Sobre: {{ item.conversacion.local.direccion|truncatewords:8 }}
+          </small>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No tienes conversaciones aún. 
+    <a href="{% url 'rentapp:buscar' %}">Busca propiedades</a> y contacta a los dueños.
+  </div>
+{% endif %}
+
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse {
+  animation: pulse 2s infinite;
+}
+</style>

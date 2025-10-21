@@ -49,6 +49,12 @@
         <a class="btn btn-primary mb-3" href="{% url 'rentapp:insertar_local' %}">Local</a>
         <a class="btn btn-secondary mb-3" href="{% url 'rentapp:buscar' %}">Buscar</a>
         <a class="btn btn-outline-primary mb-3" href="{% url 'rentapp:dashboard' request.user.id %}">Dashboard</a>
+        <a class="btn btn-outline-info mb-3 position-relative" href="{% url 'rentapp:conversaciones' %}" id="btn-mensajes">
+          <i class="bi bi-chat-dots"></i> Mensajes
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador-mensajes" style="display:none;">
+            0
+          </span>
+        </a>
 
         <form method="post" action="{% url 'logout' %}" class="d-inline ms-auto mb-3">
           {% csrf_token %}
@@ -146,3 +152,44 @@
 </body>
 
 </html>
+
+{% if request.user.is_authenticated %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// Notificaciones globales de mensajes no leídos
+$(document).ready(function(){
+  function actualizarContadorMensajes() {
+    $.ajax({
+      url: "{% url 'rentapp:contar_mensajes_no_leidos' %}",
+      type: 'GET',
+      success: function(resp){
+        const total = resp.total_no_leidos || 0;
+        const $contador = $('#contador-mensajes');
+        
+        if (total > 0) {
+          $contador.text(total > 99 ? '99+' : total).fadeIn();
+          
+          // Actualizar título de la página
+          if (document.title.indexOf('(') === -1) {
+            document.title = `(${total}) ${document.title}`;
+          } else {
+            document.title = document.title.replace(/\(\d+\)/, `(${total})`);
+          }
+        } else {
+          $contador.fadeOut();
+          // Limpiar título
+          document.title = document.title.replace(/\(\d+\)\s/, '');
+        }
+      },
+      error: function(){
+        console.warn('Error al obtener contador de mensajes');
+      }
+    });
+  }
+
+  // Actualizar cada 5 segundos
+  actualizarContadorMensajes();
+  setInterval(actualizarContadorMensajes, 5000);
+});
+</script>
+{% endif %}
