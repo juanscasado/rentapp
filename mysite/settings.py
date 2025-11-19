@@ -1,14 +1,19 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url  # <-- agregado
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Cargar .env local si existe
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 SECRET_KEY = os.environ.get('SECRET_KEY', default='sajfhjdhfjdhghteoeo')
 
-DEBUG = 'RENDER' not in os.environ
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1','true','yes')
 
-ALLOWED_HOSTS = []
-
+# ALLOWED_HOSTS: leer desde env y añadir RENDER_EXTERNAL_HOSTNAME si existe
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split() if os.environ.get('ALLOWED_HOSTS') else []
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -58,13 +63,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database - usar DATABASE_URL en Render si está presente
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,13 +111,36 @@ AUTH_USER_MODEL = 'rentapp.User'
 LOGIN_REDIRECT_URL = 'rentapp:index'
 LOGOUT_REDIRECT_URL = 'rentapp:index'
 
-# Email (desarrollo)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email configuration: usar SMTP si se proporcionaron credenciales, sino consola
+if os.environ.get('EMAIL_HOST_USER') and os.environ.get('EMAIL_HOST_PASSWORD'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+else:
+    # Desarrollo por defecto: consola
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # django-registration-redux
 ACCOUNT_ACTIVATION_DAYS = 7
-REGISTRATION_AUTO_LOGIN = True
+REGISTRATION_AUTO_LOGIN = False  # Cambiar a False para requerir activación
+REGISTRATION_EMAIL_HTML = True  # Enviar emails en HTML
 
 # Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+# Security hardening para producción
+if not DEBUG:
+    # Detección de proxy TLS (Render pasa tráfico HTTPS al contenedor)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
