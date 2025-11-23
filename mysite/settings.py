@@ -1,6 +1,10 @@
+
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    raise RuntimeError("python-dotenv no está instalado. Asegúrate de que requirements.txt contiene python-dotenv y redeploy en Render.")
 import dj_database_url  # <-- agregado
 
 BASE_DIR = Path(__file__).resolve().parent.parent

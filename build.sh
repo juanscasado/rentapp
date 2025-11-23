@@ -1,29 +1,32 @@
-export DJANGO_SUPERUSER_NAME=myadmin
-export DJANGO_SUPERUSER_EMAIL=myadmin@example.com
-export DJANGO_SUPERUSER_PASSWORD=securepassword
-./build.sh#!/usr/bin/env bash
+#!/usr/bin/env bash
+# Build script para Render
 
-set -o errexit
+set -o errexit  # Exit on error
 
+echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
+echo "Collecting static files..."
 python manage.py collectstatic --noinput
-#!/bin/sh
 
-# Aplica migraciones
-python manage.py migrate
+echo "Running database migrations..."
+python manage.py migrate --noinput
 
-# Crear superusuario sin entrada manual
-SUPERUSER_NAME=${DJANGO_SUPERUSER_NAME:-admin}
-SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
-SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-adminpassword}
+echo "Creating superuser if not exists..."
+python manage.py shell << END
+from django.contrib.auth import get_user_model
+User = get_user_model()
+import os
 
-echo "from django.contrib.auth import get_user_model;
-User = get_user_model();
-if not User.objects.filter(username='$SUPERUSER_NAME').exists():
-    User.objects.create_superuser('$SUPERUSER_NAME', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')" | python manage.py shell
+username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
+password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'changeme123')
 
-echo "from django.contrib.auth import get_user_model;
-User = get_user_model();
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'juans.casado@gmail.com', 'adminpassword')" | python manage.py shell
+if not User.objects.filter(username=username).exists():
+    User.objects.create_superuser(username, email, password)
+    print(f'Superuser {username} created successfully')
+else:
+    print(f'Superuser {username} already exists')
+END
+
+echo "Build completed successfully!"
